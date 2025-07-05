@@ -1,0 +1,71 @@
+---
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+
+const { pathname } = Astro.url;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="description"
+      content="SproutJourney: AI-powered learning tailored to each child's style and pace. We blend interactive stories, critical thinking, and personalized guidance. Eli the Elephant leads kids through ethics, social values, and more in a fun, curiosity-sparking environment."
+    />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+
+    <meta name="generator" content={Astro.generator} />
+    <title>Sprout Journey</title>
+  </head>
+  <body class="flex flex-col min-h-screen w-full text-body">
+    {
+      pathname !== "/join" && (
+        <div class="px-6 pt-4">
+          <Navbar />
+        </div>
+      )
+    }
+
+    <div class="flex-grow xl:w-[95%] xl:mx-auto p-2 overflow-x-hidden">
+      <slot />
+    </div>
+
+    {
+      pathname !== "/join" && (
+        <div class="">
+          <Footer />
+        </div>
+      )
+    }
+  </body>
+</html>
+
+<style is:global>
+  @font-face {
+    font-family: "HeroeauElegantDemo";
+    src: url("/fonts/heroeau-elegant-demo.regular.otf") format("opentype");
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: "ladyrose";
+    src: url("/fonts/ladyrose.otf") format("opentype");
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: "Helvetica";
+    src: url("/fonts/Helvetica.ttf") format("ttf");
+    font-weight: normal;
+    font-style: normal;
+  }
+</style>

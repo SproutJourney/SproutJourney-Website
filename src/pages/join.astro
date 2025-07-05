@@ -1,0 +1,252 @@
+<div
+  class="fixed lg:p-24 p-4 bg-secondary rounded-2xl border-4 border-primary top-1/2 z-50 left-1/2 translate-x-[-50%] translate-y-[-50%] flex-col items-center justify-center gap-8"
+  id="applicationbar"
+>
+  <div class="text-4xl font-semibold w-full text-center p-12">
+    <span class="flex-1 text-center"> Download Our Demo Applications </span>
+  </div>
+
+  <div class="flex lg:flex-row flex-col justify-between items-center gap-8">
+    <a
+      href="/desktop.zip"
+      download
+      class="flex flex-col items-center bg-primary text-secondary hover:text-primary hover:bg-secondary hover:border-2 hover:border-primary duration-300 transition-all p-4 font-bold text-xl rounded-xl w-60"
+    >
+      <span>.exe</span>
+      <span class="text-sm font-normal">Educational Institutions</span>
+      <span class="text-sm font-normal">Desktop Version v0.2</span>
+    </a>
+    <a
+      href="https://sproutjourney.s3.ap-south-1.amazonaws.com/Sproutjourney_Mobile_Alpha_0.01.apk"
+      class="flex flex-col items-center bg-primary text-secondary p-4 font-bold text-xl rounded-xl w-60 hover:text-primary hover:bg-secondary hover:border-2 hover:border-primary duration-300 transition-all"
+    >
+      <span>.apk</span>
+      <span class="text-sm font-normal">Students</span>
+      <span class="text-sm font-normal">Mobile Version v0.1</span>
+    </a>
+  </div>
+  <button
+    class="text-3xl flex w-full p-12 lg:justify-end justify-center"
+    id="closedownload">close</button
+  >
+</div>
+
+<div
+  class="flex flex-col gap-4 bg-pink-100 p-16 w-full min-h-screen"
+  id="formcard"
+>
+  <div class="flex w-full justify-end text-3xl">
+    <a href="/" class="text-6xl font-bold -mt-8"> x </a>
+  </div>
+  <div class="flex flex-col lg:flex-row w-full flex-grow">
+    <div
+      class="w-full text-6xl lg:flex flex-col lg:p-20 p-4 lg:text-left text-center flex-1"
+    >
+      <span class="text-4xl lg:flex hidden">welcome</span>
+      <span> Fill the form to become <br /> part of our alpha program </span>
+    </div>
+
+    <form
+      id="joinForm"
+      class="w-full flex lg:text-lg text-4xl flex-col lg:gap-4 gap-8 flex-1"
+    >
+      <input
+        type="text"
+        id="name"
+        name="name"
+        class="bg-black text-white w-full p-2 lg:py-4 py-8 px-4 rounded-lg placeholder:text-white"
+        placeholder="Name"
+        required
+      />
+      <input
+        type="email"
+        id="email"
+        name="email"
+        class="bg-black text-white w-full p-2 lg:py-4 py-8 px-4 rounded-lg placeholder:text-white"
+        placeholder="Email"
+        required
+      />
+      <input
+        type="tel"
+        id="phone"
+        name="phone"
+        class="bg-black text-white w-full p-2 lg:py-4 py-8 px-4 rounded-lg placeholder:text-white"
+        placeholder="Phone"
+        required
+      />
+      <select
+        id="role"
+        name="role"
+        class="bg-black text-white w-full p-2 lg:py-4 py-8 px-4 rounded-lg placeholder:text-white"
+        required
+      >
+        <option value="">Role</option>
+        <option value="student">student</option>
+        <option value="teacher">teacher</option>
+        <option value="organization">organization</option>
+      </select>
+      <input
+        type="text"
+        id="institute"
+        name="institute"
+        class="bg-black text-white w-full p-2 lg:py-4 py-8 px-4 rounded-lg placeholder:text-white"
+        placeholder="Institute (if applicable)"
+        required
+      />
+      <select
+        id="institutetype"
+        name="institutetype"
+        class="bg-black text-white w-full p-2 lg:py-4 py-8 px-4 rounded-lg placeholder:text-white"
+        required
+      >
+        <option value="">Institute Type</option>
+        <option value="pre primary">Pre Primary</option>
+        <option value="primary">Primary</option>
+        <option value="middle">Middle</option>
+      </select>
+      <input
+        type="text"
+        id="heard"
+        name="heard"
+        class="bg-black text-white w-full p-2 lg:py-4 py-8 px-4 rounded-lg placeholder:text-white"
+        placeholder="How did you hear about us?"
+        required
+      />
+      <input
+        type="number"
+        id="students"
+        name="students"
+        class="bg-black text-white w-full p-2 lg:py-4 py-8 px-4 rounded-lg placeholder:text-white"
+        placeholder="number of students participating"
+        required
+      />
+
+      <div class="flex gap-4">
+        <input type="checkbox" id="promotional" name="promotional" />
+        <label for="promotional">
+          Would you like to receive promotional emails and updates about
+          SproutJourney?
+        </label>
+      </div>
+      <div class="flex gap-4">
+        <input type="checkbox" id="terms" name="terms" required />
+        <a href="/privacy">
+          I agree to the terms and conditions and the privacy policy of
+          SproutJourney
+        </a>
+      </div>
+
+      <button
+        type="submit"
+        class="bg-black text-white font-bold lg:py-4 py-8 rounded-lg"
+        id="joinSubmitButton">JOIN THE ALPHA PROGRAM</button
+      >
+    </form>
+  </div>
+
+  <div
+    class="flex gap-4 items-center justify-center w-full text-4xl font-black"
+  >
+    <span class="text-[45px] text-primary">SPROUT JOURNEY</span>
+    <span class="divider">|</span>
+    <span class="transparent">ALPHA PROGRAM</span>
+  </div>
+</div>
+
+<style>
+  #formcard {
+    background-image: url("/bg-gradient.png");
+    background-position: end;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .transparent {
+    -webkit-text-stroke: 2px black;
+    color: transparent;
+    font-size: 45px;
+    font-family: sans-serif;
+  }
+</style>
+
+<script>
+  import { createClient } from "@supabase/supabase-js";
+
+  const applicationbar = document.getElementById(
+    "applicationbar"
+  ) as HTMLDivElement;
+  const close = document.getElementById("closedownload") as HTMLButtonElement;
+
+  const supabase = createClient(
+    "https://emxucasksvrjbgzplfwp.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVteHVjYXNrc3ZyamJnenBsZndwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjU5OTM3NzMsImV4cCI6MjA0MTU2OTc3M30.TP1dtBRVAHS4WN2hHFOrSVJS6oTNhkTxdcVampqTOyk"
+  );
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("joinForm") as HTMLFormElement;
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault(); // Prevent the default form submission
+
+      const formData = new FormData(form);
+      const name = formData.get("name");
+      const email = formData.get("email");
+      const phone = formData.get("phone");
+      const role = formData.get("role");
+      const institute = formData.get("institute");
+      const instituteType = formData.get("institutetype");
+      const heard = formData.get("heard");
+      const students = formData.get("students");
+
+      if (
+        !name ||
+        !email ||
+        !phone ||
+        !role ||
+        !institute ||
+        !instituteType ||
+        !heard ||
+        !students
+      ) {
+        alert("Please fill all required fields");
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.from("Users").insert({
+          name,
+          email,
+          phone,
+          role,
+          institute,
+          institute_type: instituteType,
+          heard_us: heard,
+          num_students: students,
+        });
+
+        if (error) throw error;
+
+        console.log("Data submitted successfully:", data);
+        alert("User created successfully!");
+        applicationbar.classList.toggle("hidden");
+        form.reset();
+      } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred while creating the user.");
+      }
+    });
+  });
+
+  close.addEventListener("click", () => {
+    applicationbar.classList.toggle("hidden");
+  });
+</script>
+
+<style>
+  /* Mobile styles */
+  input[type="checkbox"] {
+    width: 30px;
+    height: 30px;
+    transform: translateY(1px);
+  }
+</style>

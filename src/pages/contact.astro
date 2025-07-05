@@ -1,0 +1,169 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+  <main class="w-full flex flex-col lg:gap-24 gap-8 lg:mb-36">
+    <span
+      class="w-full flex items-center justify-center text-header lg:text-6xl text-4xl font-bold text-primary tracking-wider mt-8"
+      >Contact Us</span
+    >
+
+    <div class="flex lg:flex-row flex-col justify-between">
+      <div class="w-[30%] lg:flex hidden flex-col items-center justify-around">
+        <div class="text-xl flex flex-col items-center justify-center">
+          <img src="/chats.svg" alt="" class="w-36 h-36" />
+          <a href="mailto: ">info@sproutjourney.in</a>
+        </div>
+        <div class="text-xl flex flex-col items-center justify-center">
+          <img src="/career.svg" alt="" class="w-36 h-36" />
+          <a href="/careers">join us</a>
+        </div>
+      </div>
+
+      <div class="w-full lg:border-l-4 rounded-sm lg:border-primary pl-12">
+        <div
+          class="bg-white p-8 rounded-lg shadow-md w-full border-2 border-primary"
+        >
+          <form>
+            <div class="mb-4">
+              <label for="name" class="block text-lg font-medium text-primary"
+                >Name</label
+              >
+              <input
+                type="text"
+                id="name"
+                name="name"
+                class="mt-1 block w-full rounded-md border-2 border-primary p-1 focus:ring-opacity-50"
+                placeholder="value"
+              />
+            </div>
+            <div class="mb-4">
+              <label for="email" class="block text-lg font-medium text-primary"
+                >Email*</label
+              >
+              <input
+                type="email"
+                id="email"
+                name="email"
+                class="mt-1 block w-full rounded-md border-2 border-primary p-1 focus:ring-opacity-50"
+                placeholder="value"
+                required
+              />
+            </div>
+            <div class="mb-4">
+              <label for="phone" class="block text-lg font-medium text-primary"
+                >Phone No.</label
+              >
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                class="mt-1 block w-full rounded-md border-2 border-primary p-1 focus:ring-opacity-50"
+                placeholder="value"
+              />
+            </div>
+            <div class="mb-4">
+              <label
+                for="purpose"
+                class="block text-lg font-medium text-primary"
+                >Purpose Of Reaching Out : *</label
+              >
+              <div
+                class="mt-2 space-y-2 flex lg:flex-row flex-col lg:items-center items-start lg:justify-between justify-center"
+              >
+                {
+                  [
+                    "Partnerships",
+                    "Media and PR",
+                    "Careers",
+                    "Testing",
+                    "Others",
+                  ].map((purpose) => (
+                    <div class="flex items-center justify-center">
+                      <input
+                        id={purpose.toLowerCase().replace(/\s+/g, "-")}
+                        name="purpose"
+                        type="checkbox"
+                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      />
+                      <label
+                        for={purpose.toLowerCase().replace(/\s+/g, "-")}
+                        class="ml-2 text-sm text-gray-700"
+                      >
+                        {purpose}
+                      </label>
+                    </div>
+                  ))
+                }
+              </div>
+            </div>
+            <div class="mb-4">
+              <label
+                for="message"
+                class="block text-lg font-medium text-primary">Message</label
+              >
+              <textarea
+                id="message"
+                name="message"
+                rows="3"
+                class="mt-1 block w-full rounded-md border-2 border-primary p-1 focus:ring-opacity-50"
+                placeholder="value"></textarea>
+            </div>
+            <div>
+              <button
+                type="submit"
+                id="submitbutton"
+                class="w-full flex justify-center py-2 px-4 rounded-lg bg-primary text-secondary"
+              >
+                Submit
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { createClient } from "@supabase/supabase-js";
+
+  const supabase = createClient(
+    "https://emxucasksvrjbgzplfwp.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVteHVjYXNrc3ZyamJnenBsZndwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjU5OTM3NzMsImV4cCI6MjA0MTU2OTc3M30.TP1dtBRVAHS4WN2hHFOrSVJS6oTNhkTxdcVampqTOyk"
+  );
+
+  const name = document.getElementById("name") as HTMLInputElement;
+  const email = document.getElementById("email") as HTMLInputElement;
+  const phone = document.getElementById("phone") as HTMLInputElement;
+  const message = document.getElementById("message") as HTMLInputElement;
+
+  const submitbutton = document.getElementById(
+    "submitbutton"
+  ) as HTMLButtonElement;
+
+  submitbutton.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    if (!name.value || !email.value || !phone.value || !message.value) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.from("Contact").insert({
+        name: name.value,
+        email: email.value,
+        phone: phone.value,
+        message: message.value,
+      });
+
+      if (error) throw error;
+      alert("Message sent successfully");
+    } catch (error) {
+      console.log(error);
+      alert("An error occurred while sending the message");
+    }
+  });
+</script>

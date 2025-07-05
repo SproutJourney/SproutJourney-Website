@@ -1,0 +1,1911 @@
+---
+import Layout from "../layouts/Layout.astro";
+import {
+  supabase,
+  getTeacherStudents,
+  getAvailableStudents,
+  addStudentToTeacher,
+  createStudent,
+  logoutTeacher,
+} from "../lib/supabase";
+import type { Student, Teacher } from "../lib/models";
+
+// Initialize with empty data - we'll load actual data on client side
+const initialStudents: Student[] = [];
+
+const classStats = {
+  totalStudents: 0,
+  averageProgress: 0,
+  topSubject: "Science",
+  improvementArea: "Financial Literacy",
+  activeStudents: 0,
+  lessonsCompleted: 0,
+  averageEngagement: 0,
+};
+
+// Default to showing first page of students (12 per page)
+const studentsPerPage = 12;
+const currentPage = 1;
+const displayedStudents = initialStudents.slice(0, studentsPerPage);
+
+const recentLessons = [
+  {
+    title: "Environmental Science Project",
+    type: "Science",
+    completion: 92,
+    date: "2023-07-14",
+  },
+  {
+    title: "Algebra Fundamentals",
+    type: "Maths",
+    completion: 85,
+    date: "2023-07-13",
+  },
+  {
+    title: "Indian Cultural Heritage",
+    type: "Social Science and Indian Ethics",
+    completion: 79,
+    date: "2023-07-12",
+  },
+  {
+    title: "Basic Banking Concepts",
+    type: "Financial Literacy",
+    completion: 88,
+    date: "2023-07-11",
+  },
+];
+---
+
+<Layout title="Teacher Dashboard">
+  <main class="w-full flex flex-col gap-8 mb-16 text-primary">
+    <!-- Dashboard Header -->
+    <div
+      class="flex lg:flex-row flex-col justify-between items-center bg-secondary rounded-xl p-6 shadow-md"
+    >
+      <div class="flex flex-col">
+        <h1 class="text-4xl font-bold">Teacher Dashboard</h1>
+        <p class="text-lg opacity-75" id="teacher-welcome">
+          Welcome back, Teacher!
+        </p>
+      </div>
+      <div class="flex gap-4 mt-4 lg:mt-0">
+        <button
+          id="add-students-btn"
+          class="bg-primary text-secondary px-6 py-3 rounded-xl flex items-center gap-2 hover:opacity-90 transition-all"
+        >
+          <i class="fas fa-user-plus"></i> Add Students
+        </button>
+
+        <button
+          id="logout-btn"
+          class="bg-red-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 hover:opacity-90 transition-all"
+        >
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- Dashboard Stats -->
+    <div class="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-6">
+      <div
+        class="bg-white p-6 rounded-xl shadow-md border-l-4 border-extra_text1"
+      >
+        <div class="flex justify-between items-center">
+          <p class="text-lg opacity-75">Total Students</p>
+          <i class="fas fa-users text-extra_text1 text-2xl"></i>
+        </div>
+        <h2 class="text-3xl font-bold mt-2" id="totalStudents">0</h2>
+        <p class="text-sm mt-2 text-extra_text1">Updated in real-time</p>
+      </div>
+
+      <div
+        class="bg-white p-6 rounded-xl shadow-md border-l-4 border-extra_text2"
+      >
+        <div class="flex justify-between items-center">
+          <p class="text-lg opacity-75">Average Progress</p>
+          <i class="fas fa-chart-line text-extra_text2 text-2xl"></i>
+        </div>
+        <h2 class="text-3xl font-bold mt-2" id="averageProgress">0%</h2>
+        <p class="text-sm mt-2 text-extra_text2">
+          Based on all student activities
+        </p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-primary">
+        <div class="flex justify-between items-center">
+          <p class="text-lg opacity-75">Avg Engagement</p>
+          <i class="fas fa-user-check text-primary text-2xl"></i>
+        </div>
+        <h2 class="text-3xl font-bold mt-2" id="avg_engagement">516s</h2>
+        <p class="text-sm mt-2">Seconds</p>
+      </div>
+
+      <div
+        class="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#478978]"
+      >
+        <div class="flex justify-between items-center">
+          <p class="text-lg opacity-75">Top Subject</p>
+          <i class="fas fa-star text-[#478978] text-2xl"></i>
+        </div>
+        <h2 class="text-3xl font-bold mt-2" id="topSubject">Science</h2>
+        <p class="text-sm mt-2 text-[#478978]">Most popular among students</p>
+      </div>
+    </div>
+
+    <!-- Main Dashboard Content -->
+    <div class="grid lg:grid-cols-3 grid-cols-1 gap-6">
+      <!-- Student Progress Table -->
+      <div class="lg:col-span-2 bg-white rounded-xl shadow-md p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold">Student Progress</h2>
+          <div class="flex items-center gap-2">
+            <input
+              type="text"
+              id="student-search"
+              placeholder="Search students..."
+              class="px-4 py-2 border rounded-lg text-sm w-64"
+            />
+            <button
+              id="search-btn"
+              class="bg-primary text-secondary p-2 rounded-lg"
+            >
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b-2 border-gray-200">
+                <th class="py-3 text-left">Student</th>
+                <th class="py-3 text-left">Grade</th>
+                <th class="py-3 text-left">Progress</th>
+                <th class="py-3 text-left">Last Active</th>
+                <th class="py-3 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="students-table-body">
+              {
+                displayedStudents.map((student) => (
+                  <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="py-3">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-primary font-bold">
+                          {student.name.charAt(0)}
+                        </div>
+                        <span>{student.name}</span>
+                      </div>
+                    </td>
+                    <td class="py-3">{student.grade}</td>
+                    <td class="py-3">
+                      <div class="flex items-center gap-2">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                          <div
+                            class="bg-extra_text1 h-2.5 rounded-full"
+                            style={`width: ${student.progress}%`}
+                          />
+                        </div>
+                        <span>{student.progress}%</span>
+                      </div>
+                    </td>
+                    <td class="py-3">{student.lastActivity}</td>
+                    <td class="py-3">
+                      <a
+                        href="/student/${student.id}"
+                        class="text-blue-600 hover:text-blue-800 cursor-pointer"
+                      >
+                        <i class="fas fa-eye" />
+                      </a>
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex justify-between items-center mt-4">
+          <p class="text-sm text-gray-500" id="pagination-info">
+            Showing <span id="showing-start">1</span> to <span id="showing-end"
+              >12</span
+            > of {classStats.totalStudents} students
+          </p>
+          <div class="flex gap-1" id="pagination-controls">
+            <button class="px-3 py-1 border rounded-md" data-page="1">1</button>
+            <button class="px-3 py-1 border rounded-md" data-page="2">2</button>
+            <button class="px-3 py-1 border rounded-md" data-page="3">3</button>
+            <button class="px-3 py-1 border rounded-md" data-page="4">4</button>
+            <button class="px-3 py-1 border rounded-md" data-page="5">5</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Insights -->
+      <div class="bg-white rounded-xl shadow-md p-6">
+        <h2 class="text-2xl font-bold mb-6">Student Insights</h2>
+
+        <div class="mb-6">
+          <h3 class="font-semibold mb-2">Class Strengths</h3>
+          <div class="flex flex-wrap gap-2">
+            <span
+              class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+              >Problem Solving</span
+            >
+            <span
+              class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+              >Scientific Concepts</span
+            >
+            <span
+              class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+              >Critical Thinking</span
+            >
+            <span
+              class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+              >Creative Writing</span
+            >
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="font-semibold mb-2">Areas for Improvement</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm"
+              >Reading Comprehension</span
+            >
+            <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm"
+              >Math Facts</span
+            >
+            <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm"
+              >Historical Context</span
+            >
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="font-semibold mb-2">Progress Distribution</h3>
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <span>Maths</span>
+                <span>35%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-blue-600 h-2 rounded-full" style="width: 35%">
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <span>Science</span>
+                <span>30%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-green-600 h-2 rounded-full" style="width: 30%">
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <span>Social Science and Indian Ethics</span>
+                <span>25%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-purple-600 h-2 rounded-full" style="width: 25%">
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <span>Financial Literacy</span>
+                <span>10%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-yellow-600 h-2 rounded-full" style="width: 10%">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-semibold mb-4">AI-Generated Cognitive Analysis</h3>
+          <div class="space-y-4 text-sm" id="ai-recommendations">
+            <div
+              class="p-4 bg-white rounded-lg border border-gray-200 shadow-sm"
+            >
+              <div class="flex items-start gap-3">
+                <i class="fas fa-brain text-primary mt-1"></i>
+                <p class="leading-relaxed">
+                  Students show a pattern of strong initial concept grasp but
+                  struggle with application, particularly evident in mathematics
+                  where theoretical understanding outpaces practical
+                  problem-solving abilities.
+                </p>
+              </div>
+            </div>
+            <div
+              class="p-4 bg-white rounded-lg border border-gray-200 shadow-sm"
+            >
+              <div class="flex items-start gap-3">
+                <i class="fas fa-lightbulb text-primary mt-1"></i>
+                <p class="leading-relaxed">
+                  The class demonstrates high engagement in interactive and
+                  collaborative tasks, suggesting a collective preference for
+                  social learning environments that could be leveraged for
+                  peer-to-peer knowledge sharing.
+                </p>
+              </div>
+            </div>
+            <div
+              class="p-4 bg-white rounded-lg border border-gray-200 shadow-sm"
+            >
+              <div class="flex items-start gap-3">
+                <i class="fas fa-chart-line text-primary mt-1"></i>
+                <p class="leading-relaxed">
+                  Analysis reveals a need for strengthening metacognitive skills
+                  across subjects, as students often miss opportunities to
+                  connect concepts between different areas of study.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Teaching Assistant -->
+
+    <!-- Add script for interactive elements -->
+    <script>
+      import {
+        getCurrentTeacher,
+        logoutTeacher,
+        getTeacherStudents,
+        getAvailableStudents,
+        addStudentToTeacher,
+        createStudent,
+      } from "../lib/supabase";
+      import type { Student, Teacher } from "../lib/models";
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        console.log("Teacher Dashboard loaded successfully");
+
+        // Authentication check
+        let teacherStr;
+        try {
+          teacherStr = localStorage.getItem("teacher");
+        } catch (e) {
+          console.error("Error accessing localStorage:", e);
+          teacherStr = null;
+        }
+
+        // If no teacher is found, create a default one
+        if (!teacherStr) {
+          console.log(
+            "No teacher found in localStorage, creating default teacher",
+          );
+          const defaultTeacher = {
+            id: "52cc3562-c449-47fd-bed1-6f06e6047f7d", // Use the actual teacher ID from the database
+            name: "Kartikey Patel",
+            emp_id: "FAC123",
+            emp_username: "FAC123",
+          };
+          try {
+            localStorage.setItem("teacher", JSON.stringify(defaultTeacher));
+            teacherStr = JSON.stringify(defaultTeacher);
+          } catch (e) {
+            console.error("Error setting localStorage:", e);
+          }
+        }
+
+        // Parse teacher data
+        let teacher: Teacher;
+        try {
+          if (!teacherStr) {
+            throw new Error("No teacher data available");
+          }
+          const parsedTeacher = JSON.parse(teacherStr);
+          if (
+            !parsedTeacher ||
+            typeof parsedTeacher !== "object" ||
+            !parsedTeacher.id
+          ) {
+            throw new Error("Invalid teacher data");
+          }
+          teacher = parsedTeacher as Teacher;
+        } catch (error) {
+          console.error("Error parsing teacher data:", error);
+          window.location.href = "/login";
+          return;
+        }
+
+        // Update welcome message
+        const welcomeMsg = document.getElementById("teacher-welcome");
+        if (welcomeMsg && teacher.name) {
+          welcomeMsg.textContent = `Welcome back, ${teacher.name}!`;
+        }
+
+        // Logout functionality
+        const logoutBtn = document.getElementById("logout-btn");
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", () => {
+            logoutTeacher();
+            window.location.href = "/login";
+          });
+        }
+
+        // Fetch students assigned to this teacher
+        let students: Student[] = [];
+        try {
+          console.log("Fetching students for teacher ID:", teacher.id);
+          students = await getTeacherStudents(teacher.id);
+          console.log("Fetched students:", students);
+
+          // If no students are fetched, add some sample data for testing
+          if (!students || students.length === 0) {
+            console.log("No students found, using sample data");
+            students = [
+              {
+                id: "2486e968-285c-4d42-b85e-26c2f48f9e49",
+                name: "John Doe",
+                age: 7,
+                grade: "2nd",
+                progress: 75,
+                lastActivity: "2024-03-01",
+                maths_progress: 80,
+                science_progress: 70,
+                social_science_ethics_progress: 0,
+                financial_literacy_progress: 60,
+                maths_score: 85,
+                science_score: 75,
+                social_science_ethics_score: 0,
+                financial_literacy_score: 65,
+                strengths: ["Problem Solving", "Critical Thinking"],
+                improvements: ["Time Management"],
+                aiRecommendation: "Focus on improving time management skills",
+              },
+              {
+                id: "3486e968-285c-4d42-b85e-26c2f48f9e50",
+                name: "Jane Smith",
+                age: 8,
+                grade: "3rd",
+                progress: 85,
+                lastActivity: "2024-03-01",
+                maths_progress: 90,
+                science_progress: 0,
+                social_science_ethics_progress: 85,
+                financial_literacy_progress: 70,
+                maths_score: 95,
+                science_score: 0,
+                social_science_ethics_score: 80,
+                financial_literacy_score: 75,
+                strengths: ["Mathematics", "Communication"],
+                improvements: ["Group Work"],
+                aiRecommendation:
+                  "Encourage more participation in group activities",
+              },
+              {
+                id: "4486e968-285c-4d42-b85e-26c2f48f9e51",
+                name: "Mike Johnson",
+                age: 6,
+                grade: "1st",
+                progress: 60,
+                lastActivity: "2024-03-01",
+                maths_progress: 65,
+                science_progress: 70,
+                social_science_ethics_progress: 0,
+                financial_literacy_progress: 50,
+                maths_score: 60,
+                science_score: 75,
+                social_science_ethics_score: 0,
+                financial_literacy_score: 55,
+                strengths: ["Creativity", "Curiosity"],
+                improvements: ["Focus"],
+                aiRecommendation:
+                  "Implement strategies to improve focus during lessons",
+              },
+            ];
+          }
+        } catch (error) {
+          console.error("Error fetching students:", error);
+          // Use sample data if there's an error
+          students = [
+            {
+              id: "2486e968-285c-4d42-b85e-26c2f48f9e49",
+              name: "John Doe",
+              age: 7,
+              grade: "2nd",
+              progress: 75,
+              lastActivity: "2024-03-01",
+              maths_progress: 80,
+              science_progress: 70,
+              social_science_ethics_progress: 0,
+              financial_literacy_progress: 60,
+              maths_score: 85,
+              science_score: 75,
+              social_science_ethics_score: 0,
+              financial_literacy_score: 65,
+              strengths: ["Problem Solving", "Critical Thinking"],
+              improvements: ["Time Management"],
+              aiRecommendation: "Focus on improving time management skills",
+            },
+            {
+              id: "3486e968-285c-4d42-b85e-26c2f48f9e50",
+              name: "Jane Smith",
+              age: 8,
+              grade: "3rd",
+              progress: 85,
+              lastActivity: "2024-03-01",
+              maths_progress: 90,
+              science_progress: 0,
+              social_science_ethics_progress: 85,
+              financial_literacy_progress: 70,
+              maths_score: 95,
+              science_score: 0,
+              social_science_ethics_score: 80,
+              financial_literacy_score: 75,
+              strengths: ["Mathematics", "Communication"],
+              improvements: ["Group Work"],
+              aiRecommendation:
+                "Encourage more participation in group activities",
+            },
+            {
+              id: "4486e968-285c-4d42-b85e-26c2f48f9e51",
+              name: "Mike Johnson",
+              age: 6,
+              grade: "1st",
+              progress: 60,
+              lastActivity: "2024-03-01",
+              maths_progress: 65,
+              science_progress: 70,
+              social_science_ethics_progress: 0,
+              financial_literacy_progress: 50,
+              maths_score: 60,
+              science_score: 75,
+              social_science_ethics_score: 0,
+              financial_literacy_score: 55,
+              strengths: ["Creativity", "Curiosity"],
+              improvements: ["Focus"],
+              aiRecommendation:
+                "Implement strategies to improve focus during lessons",
+            },
+          ];
+        }
+
+        // Set up variables for pagination
+        const studentsPerPage = 12;
+        let currentPage = 1;
+        let filteredStudents = [...students];
+
+        // Get DOM elements for pagination
+        const paginationControls = document.getElementById(
+          "pagination-controls",
+        );
+
+        // Define functions for rendering students and pagination
+        function renderPaginationControls() {
+          if (!paginationControls) return;
+
+          const totalPages = Math.ceil(
+            filteredStudents.length / studentsPerPage,
+          );
+          let paginationHTML = "";
+
+          for (let i = 1; i <= totalPages; i++) {
+            const activeClass = i === currentPage ? "bg-gray-100" : "";
+            paginationHTML += `<button class="px-3 py-1 border rounded-md ${activeClass}" data-page="${i}">${i}</button>`;
+          }
+
+          if (paginationHTML === "") {
+            paginationHTML = '<span class="text-gray-500">No pages</span>';
+          }
+
+          paginationControls.innerHTML = paginationHTML;
+
+          // Add event listeners to pagination buttons
+          const pageBtns = paginationControls.querySelectorAll("button");
+          pageBtns.forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const pageAttr = btn.getAttribute("data-page");
+              if (pageAttr) {
+                currentPage = parseInt(pageAttr);
+                updatePagination();
+                renderStudents();
+              }
+            });
+          });
+        }
+
+        function renderStudents() {
+          const tableBody = document.getElementById("students-table-body");
+          if (!tableBody) {
+            console.error("Could not find students-table-body element");
+
+            // Try to find the table and create the tbody if it doesn't exist
+            const table = document.querySelector(".lg\\:col-span-2 table");
+            if (table) {
+              console.log("Found table, creating tbody");
+              const tbody = document.createElement("tbody");
+              tbody.id = "students-table-body";
+              table.appendChild(tbody);
+
+              // Try again with the newly created element
+              renderStudents();
+              return;
+            } else {
+              console.error("Could not find table element");
+              return;
+            }
+          }
+
+          console.log("Rendering students:", filteredStudents.length);
+
+          const start = (currentPage - 1) * studentsPerPage;
+          const end = start + studentsPerPage;
+          const currentStudents = filteredStudents.slice(start, end);
+
+          let tableHTML = "";
+
+          if (currentStudents.length === 0) {
+            tableHTML = `
+              <tr>
+                <td colspan="5" class="py-8 text-center text-gray-500">
+                  No students found. Add students using the "Add Students" button.
+                </td>
+              </tr>
+            `;
+          } else {
+            currentStudents.forEach((student) => {
+              tableHTML += `
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                  <td class="py-3">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-primary font-bold">
+                        ${student.name.charAt(0)}
+                      </div>
+                      <span>${student.name}</span>
+                    </div>
+                  </td>
+                  <td class="py-3">${student.grade}</td>
+                  <td class="py-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-extra_text1 h-2.5 rounded-full" style="width: ${student.progress}%"></div>
+                      </div>
+                      <span>${student.progress}%</span>
+                    </div>
+                  </td>
+                  <td class="py-3">${student.lastActivity}</td>
+                  <td class="py-3">
+                    <a 
+                      href="/student/${student.id}"
+                      class="text-blue-600 hover:text-blue-800 cursor-pointer"
+                    >
+                      <i class="fas fa-eye"></i>
+                    </a>
+                  </td>
+                </tr>
+              `;
+            });
+          }
+
+          tableBody.innerHTML = tableHTML;
+        }
+
+        function updatePagination() {
+          renderPaginationControls();
+
+          const showingStart = document.getElementById("showing-start");
+          const showingEnd = document.getElementById("showing-end");
+          const paginationInfo = document.getElementById("pagination-info");
+
+          const start =
+            filteredStudents.length > 0
+              ? (currentPage - 1) * studentsPerPage + 1
+              : 0;
+          const end = Math.min(
+            start + studentsPerPage - 1,
+            filteredStudents.length,
+          );
+
+          if (showingStart) {
+            showingStart.textContent = start.toString();
+          }
+
+          if (showingEnd) {
+            showingEnd.textContent = end.toString();
+          }
+
+          if (paginationInfo) {
+            paginationInfo.innerHTML = `Showing <span id="showing-start">${start}</span> to <span id="showing-end">${end}</span> of ${filteredStudents.length} students`;
+          }
+        }
+
+        // Update class stats based on fetched students
+        updateClassStats(students);
+
+        // Initialize student table
+        renderPaginationControls();
+        renderStudents();
+
+        // Student table functions
+
+        // Search functionality
+        const searchInput = document.getElementById(
+          "student-search",
+        ) as HTMLInputElement;
+        const searchBtn = document.getElementById("search-btn");
+
+        function performSearch() {
+          if (!searchInput) return;
+
+          const searchTerm = searchInput.value.toLowerCase().trim();
+
+          if (searchTerm === "") {
+            filteredStudents = [...students];
+          } else {
+            filteredStudents = students.filter((student) =>
+              student.name.toLowerCase().includes(searchTerm),
+            );
+          }
+
+          currentPage = 1;
+          updatePagination();
+          renderStudents();
+        }
+
+        if (searchBtn) {
+          searchBtn.addEventListener("click", performSearch);
+        }
+
+        if (searchInput) {
+          searchInput.addEventListener("keyup", (e) => {
+            if (e.key === "Enter") {
+              performSearch();
+            }
+          });
+        }
+
+        // Calculate class stats
+        function updateClassStats(studentList: Student[]) {
+          const totalStudents = studentList.length;
+          let totalProgress = 0;
+          let activeStudents = 0;
+          const today = new Date();
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(today.getDate() - 30);
+
+          // Track subject progress totals and counts
+          const subjectProgress = {
+            Maths: { total: 0, count: 0, score: 0 },
+            Science: { total: 0, count: 0, score: 0 },
+            "Social Science and Indian Ethics": {
+              total: 0,
+              count: 0,
+              score: 0,
+            },
+            "Financial Literacy": { total: 0, count: 0, score: 0 },
+          };
+
+          // Collect student strengths and improvements
+          const allStrengths: Record<string, number> = {};
+          const allImprovements: Record<string, number> = {};
+
+          studentList.forEach((student) => {
+            totalProgress += student.progress;
+
+            // Check if student was active in the last 30 days
+            const lastActivity = new Date(student.lastActivity);
+            if (lastActivity >= thirtyDaysAgo) {
+              activeStudents++;
+            }
+
+            // Aggregate subject progress and count students with non-zero progress
+            if (student.maths_progress > 0) {
+              subjectProgress["Maths"].total += student.maths_progress;
+              subjectProgress["Maths"].count++;
+              subjectProgress["Maths"].score += student.maths_score;
+            }
+
+            if (student.science_progress > 0) {
+              subjectProgress["Science"].total += student.science_progress;
+              subjectProgress["Science"].count++;
+              subjectProgress["Science"].score += student.science_score;
+            }
+
+            if (student.social_science_ethics_progress > 0) {
+              subjectProgress["Social Science and Indian Ethics"].total +=
+                student.social_science_ethics_progress;
+              subjectProgress["Social Science and Indian Ethics"].count++;
+              subjectProgress["Social Science and Indian Ethics"].score +=
+                student.social_science_ethics_score;
+            }
+
+            if (student.financial_literacy_progress > 0) {
+              subjectProgress["Financial Literacy"].total +=
+                student.financial_literacy_progress;
+              subjectProgress["Financial Literacy"].count++;
+              subjectProgress["Financial Literacy"].score +=
+                student.financial_literacy_score;
+            }
+
+            // Collect strengths and improvements
+            if (student.strengths) {
+              student.strengths.forEach((strength) => {
+                allStrengths[strength] = (allStrengths[strength] || 0) + 1;
+              });
+            }
+
+            if (student.improvements) {
+              student.improvements.forEach((improvement) => {
+                allImprovements[improvement] =
+                  (allImprovements[improvement] || 0) + 1;
+              });
+            }
+          });
+
+          // Update stats in the DOM
+          const avgProgress =
+            totalStudents > 0 ? Math.round(totalProgress / totalStudents) : 0;
+
+          // Calculate overall subject distribution percentages
+          const totalSubjectParticipation = Object.values(
+            subjectProgress,
+          ).reduce((sum, subject) => sum + subject.count, 0);
+
+          const subjectDistribution = {} as Record<string, number>;
+
+          for (const [subject, data] of Object.entries(subjectProgress)) {
+            subjectDistribution[subject] =
+              totalSubjectParticipation > 0
+                ? Math.round((data.count / totalSubjectParticipation) * 100)
+                : 0;
+          }
+
+          // Update Subject Distribution in DOM
+          updateSubjectDistribution(subjectDistribution);
+
+          // Find top subject based on average progress
+          let topSubject = "None";
+          let maxAvgProgress = 0;
+
+          for (const [subject, data] of Object.entries(subjectProgress)) {
+            const avgSubjectProgress =
+              data.count > 0 ? data.total / data.count : 0;
+            if (avgSubjectProgress > maxAvgProgress) {
+              maxAvgProgress = avgSubjectProgress;
+              topSubject = subject;
+            }
+          }
+
+          // Find weakest subject for improvement recommendation
+          let weakestSubject = "None";
+          let minAvgProgress = 101; // Start above 100%
+
+          for (const [subject, data] of Object.entries(subjectProgress)) {
+            // Only consider subjects with at least one student
+            if (data.count > 0) {
+              const avgSubjectProgress = data.total / data.count;
+              if (avgSubjectProgress < minAvgProgress) {
+                minAvgProgress = avgSubjectProgress;
+                weakestSubject = subject;
+              }
+            }
+          }
+
+          // Update class strengths based on most common strengths
+          updateClassStrengths(Object.keys(allStrengths));
+
+          // Update areas for improvement based on most common improvements
+          updateAreasForImprovement(Object.keys(allImprovements));
+
+          // Generate AI recommendations based on subject data and student stats
+          generateAIRecommendations(
+            subjectProgress,
+            weakestSubject,
+            allImprovements,
+            allStrengths,
+          );
+
+          // Update DOM elements
+          updateStatElement("totalStudents", totalStudents);
+          updateStatElement("averageProgress", avgProgress);
+          updateStatElement("activeStudents", activeStudents);
+          updateStatElement("topSubject", topSubject);
+        }
+
+        function updateSubjectDistribution(
+          subjectDistribution: Record<string, number>,
+        ) {
+          const subjectContainer = document.querySelector(".mb-6 .space-y-3");
+          if (!subjectContainer) return;
+
+          // Sort subjects by percentage (descending)
+          const sortedSubjects = Object.entries(subjectDistribution).sort(
+            (a, b) => b[1] - a[1],
+          );
+
+          const colors = {
+            Maths: "blue",
+            Science: "green",
+            "Social Science and Indian Ethics": "purple",
+            "Financial Literacy": "yellow",
+          };
+
+          let subjectHTML = "";
+
+          // Make sure we display all subjects even if percentage is 0
+          const allSubjects = [
+            "Maths",
+            "Science",
+            "Social Science and Indian Ethics",
+            "Financial Literacy",
+          ];
+
+          // Create a map of all subjects with their percentages
+          const subjectMap = new Map();
+          sortedSubjects.forEach(([subject, percentage]) => {
+            subjectMap.set(subject, percentage);
+          });
+
+          // Ensure all subjects are in the map with at least 0%
+          allSubjects.forEach((subject) => {
+            if (!subjectMap.has(subject)) {
+              subjectMap.set(subject, 0);
+            }
+          });
+
+          // Convert back to sorted array
+          const finalSubjects = Array.from(subjectMap.entries()).sort(
+            (a, b) => b[1] - a[1],
+          );
+
+          finalSubjects.forEach(([subject, percentage]) => {
+            const color = colors[subject as keyof typeof colors] || "gray";
+
+            subjectHTML += `
+              <div>
+                <div class="flex justify-between items-center mb-1">
+                  <span>${subject}</span>
+                  <span>${percentage}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div class="bg-${color}-600 h-2 rounded-full" style="width: ${percentage}%"></div>
+                </div>
+              </div>
+            `;
+          });
+
+          if (subjectHTML === "") {
+            subjectHTML =
+              '<p class="text-gray-500">No subject data available</p>';
+          }
+
+          subjectContainer.innerHTML = subjectHTML;
+        }
+
+        function updateClassStrengths(strengths: string[]) {
+          const strengthsContainer = document.querySelector(
+            ".mb-6 .flex.flex-wrap.gap-2",
+          );
+          if (!strengthsContainer) return;
+
+          let strengthsHTML = "";
+
+          if (strengths.length === 0) {
+            strengthsHTML =
+              '<span class="text-gray-500">No strengths data available</span>';
+          } else {
+            strengths.forEach((strength) => {
+              // Add an icon based on the type of strength
+              let icon = "fas fa-star"; // default icon
+              if (strength.toLowerCase().includes("problem")) {
+                icon = "fas fa-puzzle-piece";
+              } else if (strength.toLowerCase().includes("thinking")) {
+                icon = "fas fa-brain";
+              } else if (strength.toLowerCase().includes("creative")) {
+                icon = "fas fa-lightbulb";
+              } else if (strength.toLowerCase().includes("communication")) {
+                icon = "fas fa-comments";
+              }
+
+              strengthsHTML += `
+                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                  <i class="${icon}"></i>
+                  ${strength}
+                </span>
+              `;
+            });
+          }
+
+          strengthsContainer.innerHTML = strengthsHTML;
+        }
+
+        function updateAreasForImprovement(improvements: string[]) {
+          const improvementsContainer = document.querySelectorAll(
+            ".mb-6 .flex.flex-wrap.gap-2",
+          )[1];
+          if (!improvementsContainer) return;
+
+          let improvementsHTML = "";
+
+          if (improvements.length === 0) {
+            improvementsHTML =
+              '<span class="text-gray-500">No improvement data available</span>';
+          } else {
+            improvements.forEach((improvement) => {
+              // Add an icon based on the type of improvement
+              let icon = "fas fa-arrow-up"; // default icon
+              if (improvement.toLowerCase().includes("focus")) {
+                icon = "fas fa-bullseye";
+              } else if (improvement.toLowerCase().includes("time")) {
+                icon = "fas fa-clock";
+              } else if (improvement.toLowerCase().includes("comprehension")) {
+                icon = "fas fa-book-reader";
+              } else if (improvement.toLowerCase().includes("organization")) {
+                icon = "fas fa-tasks";
+              }
+
+              improvementsHTML += `
+                <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                  <i class="${icon}"></i>
+                  ${improvement}
+                </span>
+              `;
+            });
+          }
+
+          improvementsContainer.innerHTML = improvementsHTML;
+        }
+
+        // Call the new class-wide analysis API
+        async function fetchAIRecommendations(
+          subjectProgress: Record<
+            string,
+            { total: number; count: number; score: number }
+          >,
+          weakestSubject: string,
+          improvements: Record<string, number>,
+          strengths: Record<string, number>,
+        ): Promise<{
+          recommendations: string[];
+          classStrengths: string[];
+          areasForImprovement: string[];
+        }> {
+          try {
+            // Prepare the class data
+            const classData = {
+              students: students.map((student) => ({
+                id: student.id,
+                name: student.name,
+                progress: student.progress,
+                maths_progress: student.maths_progress,
+                science_progress: student.science_progress,
+                social_science_ethics_progress:
+                  student.social_science_ethics_progress,
+                financial_literacy_progress:
+                  student.financial_literacy_progress,
+                maths_score: student.maths_score,
+                science_score: student.science_score,
+                social_science_ethics_score:
+                  student.social_science_ethics_score,
+                financial_literacy_score: student.financial_literacy_score,
+                strengths: student.strengths,
+                improvements: student.improvements,
+                cognitive_analysis: {
+                  response_times: [2.5, 3.1, 2.8], // Sample data - in a real app, this would come from actual student interactions
+                  engagement_scores: [0.85, 0.92, 0.78],
+                  metacognitive_flags: [
+                    "self_reflection",
+                    "planning",
+                    "monitoring",
+                  ],
+                  novelty_scores: [0.75, 0.82, 0.68],
+                  cross_session_links: 3,
+                },
+              })),
+            };
+
+            // Call the class analysis API
+            const response = await fetch("/api/students/class-analysis", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(classData),
+            });
+
+            if (!response.ok) {
+              throw new Error(`API error: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            console.log("Class analysis response:", result);
+
+            if (!result.analysis) {
+              throw new Error("Invalid analysis response format");
+            }
+
+            // Transform the analysis into the expected format
+            return {
+              recommendations: [
+                result.analysis.cognitive_insights.primary_insight,
+                result.analysis.cognitive_insights.learning_dynamics,
+                result.analysis.cognitive_insights.engagement_pattern,
+                result.analysis.cognitive_insights.development_areas,
+              ]
+                .filter(Boolean)
+                .map((insight) => `AI: ${insight}`),
+              classStrengths:
+                result.analysis.class_strengths?.primary_strengths || [],
+              areasForImprovement:
+                result.analysis.improvement_areas?.priority_areas || [],
+            };
+          } catch (error) {
+            console.error("Error calling class analysis API:", error);
+            // Fallback to local generation if API fails
+            return {
+              recommendations: [],
+              classStrengths: [],
+              areasForImprovement: [],
+            };
+          }
+        }
+
+        // Fallback function in case the API fails
+        function generateLocalRecommendations(
+          subjectProgress: Record<
+            string,
+            { total: number; count: number; score: number }
+          >,
+          weakestSubject: string,
+          improvements: Record<string, number>,
+          strengths: Record<string, number>,
+        ) {
+          // Generate cognitive analysis identifying student deficiencies
+          const deficiencies: string[] = [];
+
+          // Analyze subject performance gaps
+          const subjectGaps = analyzeSubjectPerformanceGaps(subjectProgress);
+          if (subjectGaps.length > 0) {
+            deficiencies.push(...subjectGaps.slice(0, 2));
+          }
+
+          // Analyze cognitive patterns based on strengths and improvements
+          const cognitivePatterns = analyzeCognitivePatterns(
+            strengths,
+            improvements,
+          );
+          if (cognitivePatterns.length > 0) {
+            deficiencies.push(...cognitivePatterns.slice(0, 2));
+          }
+
+          // No longer adding hard-coded recommendations
+
+          // Update recommendations in DOM (still using this function name for compatibility)
+          updateAIRecommendations(
+            deficiencies.slice(0, 5).map((def) => `AI: ${def}`),
+          ); // Show up to 5 deficiencies
+
+          // Generate class strengths
+          const classStrengthsList = generateClassStrengths(strengths);
+
+          // Generate areas for improvement
+          const areasForImprovementList =
+            generateAreasForImprovement(improvements);
+
+          // Update UI with strengths and improvements
+          updateClassStrengths(classStrengthsList);
+          updateAreasForImprovement(areasForImprovementList);
+        }
+
+        // Function to analyze subject performance gaps
+        function analyzeSubjectPerformanceGaps(
+          subjectProgress: Record<
+            string,
+            { total: number; count: number; score: number }
+          >,
+        ): string[] {
+          const deficiencies: string[] = [];
+          const subjectAnalysis: Record<
+            string,
+            { avgProgress: number; avgScore: number }
+          > = {};
+
+          // Calculate average progress and score for each subject
+          for (const [subject, data] of Object.entries(subjectProgress)) {
+            if (data.count > 0) {
+              subjectAnalysis[subject] = {
+                avgProgress: data.total / data.count,
+                avgScore: data.score / data.count,
+              };
+            }
+          }
+
+          // Find subjects with progress-score discrepancies (understanding vs. performance gaps)
+          for (const [subject, analysis] of Object.entries(subjectAnalysis)) {
+            const progressPercentile = analysis.avgProgress;
+            const scorePercentile = analysis.avgScore;
+
+            // If progress is high but score is low = application difficulty
+            if (progressPercentile > 70 && scorePercentile < 65) {
+              if (subject === "Maths") {
+                deficiencies.push(
+                  "Students lack ability to apply mathematical concepts to practical problems despite theoretical understanding",
+                );
+              } else if (subject === "Science") {
+                deficiencies.push(
+                  "Students show deficiency in applying scientific concepts to experimental contexts",
+                );
+              } else if (subject === "Social Science and Indian Ethics") {
+                deficiencies.push(
+                  "Students lack analytical thinking skills needed for deeper social studies concept application",
+                );
+              } else if (subject === "Financial Literacy") {
+                deficiencies.push(
+                  "Students show inability to transfer financial knowledge to practical scenarios",
+                );
+              }
+            }
+
+            // If progress is low but score is decent = engagement or learning style mismatch
+            if (progressPercentile < 60 && scorePercentile > 70) {
+              if (subject === "Maths") {
+                deficiencies.push(
+                  "Students demonstrate low engagement with mathematical learning process despite good test performance",
+                );
+              } else if (subject === "Science") {
+                deficiencies.push(
+                  "Students show disengagement from science learning activities despite content knowledge",
+                );
+              } else if (subject === "Social Science and Indian Ethics") {
+                deficiencies.push(
+                  "Students lack consistent engagement with social studies content despite test proficiency",
+                );
+              } else if (subject === "Financial Literacy") {
+                deficiencies.push(
+                  "Students exhibit limited interest in financial literacy topics despite understanding core concepts",
+                );
+              }
+            }
+
+            // If both progress and score are low = fundamental learning gaps
+            if (progressPercentile < 60 && scorePercentile < 60) {
+              if (subject === "Maths") {
+                deficiencies.push(
+                  "Students show fundamental gaps in mathematical concept comprehension and application",
+                );
+              } else if (subject === "Science") {
+                deficiencies.push(
+                  "Students lack basic scientific vocabulary and conceptual understanding",
+                );
+              } else if (subject === "Social Science and Indian Ethics") {
+                deficiencies.push(
+                  "Students demonstrate significant knowledge gaps in social studies foundational concepts",
+                );
+              } else if (subject === "Financial Literacy") {
+                deficiencies.push(
+                  "Students show fundamental misunderstanding of basic financial concepts and principles",
+                );
+              }
+            }
+          }
+
+          return deficiencies;
+        }
+
+        // Function to analyze cognitive patterns based on strengths and improvements
+        function analyzeCognitivePatterns(
+          strengths: Record<string, number>,
+          improvements: Record<string, number>,
+        ): string[] {
+          const deficiencies: string[] = [];
+
+          // Analyze executive functioning patterns
+          const executiveFunctionChallenges = [
+            "Time Management",
+            "Focus",
+            "Organization",
+            "Planning",
+          ];
+          const hasExecutiveFunctionChallenges =
+            executiveFunctionChallenges.some(
+              (challenge) =>
+                improvements[challenge] && improvements[challenge] > 0,
+            );
+
+          if (hasExecutiveFunctionChallenges) {
+            deficiencies.push(
+              "Students exhibit executive function deficits affecting task completion and organization",
+            );
+          }
+
+          // Analyze working memory patterns
+          const workingMemoryChallenges = [
+            "Following Directions",
+            "Multi-Step Problems",
+            "Processing Speed",
+          ];
+          const hasWorkingMemoryChallenges = workingMemoryChallenges.some(
+            (challenge) =>
+              improvements[challenge] && improvements[challenge] > 0,
+          );
+
+          if (hasWorkingMemoryChallenges) {
+            deficiencies.push(
+              "Students demonstrate working memory limitations affecting multi-step task processing",
+            );
+          }
+
+          // Analyze social-emotional patterns
+          const socialEmotionalChallenges = [
+            "Group Work",
+            "Communication",
+            "Self-Regulation",
+          ];
+          const hasSocialEmotionalChallenges = socialEmotionalChallenges.some(
+            (challenge) =>
+              improvements[challenge] && improvements[challenge] > 0,
+          );
+
+          if (hasSocialEmotionalChallenges) {
+            deficiencies.push(
+              "Students show underdeveloped social-emotional skills affecting collaborative learning",
+            );
+          }
+
+          // Analyze cognitive strengths to leverage
+          const cognitiveStrengths = [
+            "Problem Solving",
+            "Critical Thinking",
+            "Creativity",
+            "Persistence",
+          ];
+          const hasCognitiveStrengths = cognitiveStrengths.some(
+            (strength) => strengths[strength] && strengths[strength] > 0,
+          );
+
+          if (!hasCognitiveStrengths) {
+            deficiencies.push(
+              "Students lack higher-order thinking skills necessary for complex problem solving",
+            );
+          }
+
+          return deficiencies;
+        }
+
+        // Function to generate class strengths based on student data
+        function generateClassStrengths(
+          strengths: Record<string, number>,
+        ): string[] {
+          // Get top strengths based on frequency
+          const topStrengths = Object.entries(strengths)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 4)
+            .map(([strength]) => strength);
+
+          // Ensure we have at least 4 strengths
+          if (topStrengths.length < 4) {
+            const additionalStrengths = [
+              "Creativity",
+              "Curiosity",
+              "Persistence",
+              "Collaboration",
+              "Critical Thinking",
+              "Communication",
+            ];
+
+            for (const strength of additionalStrengths) {
+              if (topStrengths.length < 4 && !topStrengths.includes(strength)) {
+                topStrengths.push(strength);
+              }
+            }
+          }
+
+          return topStrengths;
+        }
+
+        // Function to generate areas for improvement based on student data
+        function generateAreasForImprovement(
+          improvements: Record<string, number>,
+        ): string[] {
+          // Get top improvement areas based on frequency
+          const topImprovements = Object.entries(improvements)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+            .map(([improvement]) => improvement);
+
+          // Ensure we have at least 3 improvement areas
+          if (topImprovements.length < 3) {
+            const additionalImprovements = [
+              "Reading Comprehension",
+              "Working Memory",
+              "Processing Speed",
+              "Self-Regulation",
+              "Organization",
+              "Mathematical Reasoning",
+            ];
+
+            for (const improvement of additionalImprovements) {
+              if (
+                topImprovements.length < 3 &&
+                !topImprovements.includes(improvement)
+              ) {
+                topImprovements.push(improvement);
+              }
+            }
+          }
+
+          return topImprovements;
+        }
+
+        function generateAIRecommendations(
+          subjectProgress: Record<
+            string,
+            { total: number; count: number; score: number }
+          >,
+          weakestSubject: string,
+          improvements: Record<string, number>,
+          strengths: Record<string, number>,
+        ) {
+          console.log("Generating AI recommendations with real API...");
+          // First, try to get AI recommendations from the real API
+          fetchAIRecommendations(
+            subjectProgress,
+            weakestSubject,
+            improvements,
+            strengths,
+          )
+            .then((result) => {
+              console.log("API result:", result);
+              if (result.recommendations && result.recommendations.length > 0) {
+                // Update all three sections with AI-generated data
+                updateAIRecommendations(result.recommendations);
+                updateClassStrengths(result.classStrengths);
+                updateAreasForImprovement(result.areasForImprovement);
+              } else {
+                // Fallback to local generation if API fails
+                console.log("Falling back to local generation");
+                generateLocalRecommendations(
+                  subjectProgress,
+                  weakestSubject,
+                  improvements,
+                  strengths,
+                );
+              }
+            })
+            .catch((error) => {
+              console.error("Error generating AI recommendations:", error);
+              // Fallback to local generation if API fails
+              generateLocalRecommendations(
+                subjectProgress,
+                weakestSubject,
+                improvements,
+                strengths,
+              );
+            });
+        }
+
+        function updateAIRecommendations(recommendations: string[]) {
+          const recommendationsList =
+            document.getElementById("ai-recommendations");
+          if (!recommendationsList) return;
+
+          if (recommendations.length === 0) {
+            recommendationsList.innerHTML = `<li class="text-gray-500">No recommendations available yet</li>`;
+            return;
+          }
+
+          let recommendationsHTML = "";
+          recommendations.forEach((rec) => {
+            // Add an icon based on the type of recommendation
+            let icon = "fas fa-info-circle"; // default icon
+            if (rec.toLowerCase().includes("cognitive")) {
+              icon = "fas fa-brain";
+            } else if (rec.toLowerCase().includes("memory")) {
+              icon = "fas fa-memory";
+            } else if (rec.toLowerCase().includes("processing")) {
+              icon = "fas fa-microchip";
+            } else if (rec.toLowerCase().includes("attention")) {
+              icon = "fas fa-eye";
+            } else if (rec.toLowerCase().includes("learning")) {
+              icon = "fas fa-graduation-cap";
+            } else if (rec.toLowerCase().includes("engagement")) {
+              icon = "fas fa-hand-holding-heart";
+            }
+
+            recommendationsHTML += `
+              <li class="flex items-start gap-2 mb-2">
+                <i class="${icon} text-primary mt-1"></i>
+                <span>${rec}</span>
+              </li>
+            `;
+          });
+
+          recommendationsList.innerHTML = recommendationsHTML;
+        }
+
+        function updateStatElement(id: string, value: number | string) {
+          const element = document.getElementById(id);
+          if (element) {
+            if (typeof value === "number" && id === "averageProgress") {
+              element.textContent = `${value}%`;
+            } else {
+              element.textContent = value.toString();
+            }
+          }
+        }
+
+        // Modal functionality for adding students
+        const addStudentsBtn = document.getElementById("add-students-btn");
+        const floatingAddBtn = document.getElementById(
+          "floating-add-student-btn",
+        );
+        const addStudentModal = document.getElementById("add-student-modal");
+        const closeAddModal = document.getElementById("close-add-modal");
+        const newStudentBtn = document.getElementById("new-student-btn");
+        const newStudentModal = document.getElementById("new-student-modal");
+        const closeNewStudentModal = document.getElementById(
+          "close-new-student-modal",
+        );
+        const cancelNewStudent = document.getElementById("cancel-new-student");
+        const newStudentForm = document.getElementById(
+          "new-student-form",
+        ) as HTMLFormElement;
+
+        // Show add student modal
+        [addStudentsBtn, floatingAddBtn].forEach((btn) => {
+          if (btn) {
+            btn.addEventListener("click", async () => {
+              if (addStudentModal) {
+                addStudentModal.classList.remove("hidden");
+                loadAvailableStudents();
+              }
+            });
+          }
+        });
+
+        // Close add student modal
+        if (closeAddModal) {
+          closeAddModal.addEventListener("click", () => {
+            if (addStudentModal) {
+              addStudentModal.classList.add("hidden");
+            }
+          });
+        }
+
+        // Show new student modal
+        if (newStudentBtn) {
+          newStudentBtn.addEventListener("click", () => {
+            if (newStudentModal && addStudentModal) {
+              newStudentModal.classList.remove("hidden");
+              addStudentModal.classList.add("hidden");
+            }
+          });
+        }
+
+        // Close new student modal
+        [closeNewStudentModal, cancelNewStudent].forEach((btn) => {
+          if (btn) {
+            btn.addEventListener("click", () => {
+              if (newStudentModal && addStudentModal) {
+                newStudentModal.classList.add("hidden");
+                addStudentModal.classList.remove("hidden");
+              }
+            });
+          }
+        });
+
+        // Handle new student form submission
+        if (newStudentForm) {
+          newStudentForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(newStudentForm);
+            const studentData = {
+              name: formData.get("name") as string,
+              age: parseInt(formData.get("age") as string),
+              grade: (formData.get("grade") as string) || undefined,
+            };
+
+            try {
+              const newStudent = await createStudent(studentData);
+
+              if (newStudent && teacher) {
+                // Add student to teacher
+                await addStudentToTeacher(teacher.id, newStudent.id);
+
+                // Refresh students list
+                students = await getTeacherStudents(teacher.id);
+                filteredStudents = [...students];
+                updateClassStats(students);
+                renderStudents();
+                updatePagination();
+
+                // Close modal and show success
+                if (newStudentModal) {
+                  newStudentModal.classList.add("hidden");
+                  newStudentForm.reset();
+                  alert("Student created and added successfully!");
+                }
+              }
+            } catch (error) {
+              console.error("Error creating student:", error);
+              alert("Failed to create student. Please try again.");
+            }
+          });
+        }
+
+        // Load available students
+        async function loadAvailableStudents() {
+          const availableStudentsList = document.getElementById(
+            "available-students-list",
+          );
+          if (!availableStudentsList || !teacher) return;
+
+          availableStudentsList.innerHTML =
+            '<div class="text-center p-4">Loading...</div>';
+
+          try {
+            const availableStudents = await getAvailableStudents(teacher.id);
+
+            if (availableStudents.length === 0) {
+              availableStudentsList.innerHTML = `
+                <div class="text-center p-4 text-gray-500">
+                  No available students found. Create a new student instead.
+                </div>
+              `;
+              return;
+            }
+
+            let listHTML = "";
+            availableStudents.forEach((student) => {
+              listHTML += `
+                <div class="border rounded-md p-3 mb-2 flex justify-between items-center hover:bg-gray-50">
+                  <div>
+                    <div class="font-medium">${student.name}</div>
+                    <div class="text-sm text-gray-500">Age: ${student.age}, Grade: ${student.grade}</div>
+                  </div>
+                  <button 
+                    class="add-available-student px-3 py-1 bg-primary text-white rounded-md hover:bg-primary/90"
+                    data-student-id="${student.id}"
+                  >
+                    Add
+                  </button>
+                </div>
+              `;
+            });
+
+            availableStudentsList.innerHTML = listHTML;
+
+            // Add event listeners to add buttons
+            const addButtons = availableStudentsList.querySelectorAll(
+              ".add-available-student",
+            );
+            addButtons.forEach((btn) => {
+              btn.addEventListener("click", async (e) => {
+                const studentId = (e.currentTarget as HTMLElement).getAttribute(
+                  "data-student-id",
+                );
+
+                if (studentId && teacher) {
+                  try {
+                    await addStudentToTeacher(teacher.id, studentId);
+
+                    // Refresh the students list
+                    students = await getTeacherStudents(teacher.id);
+                    filteredStudents = [...students];
+                    updateClassStats(students);
+                    renderStudents();
+                    updatePagination();
+
+                    // Close modal and show success
+                    if (addStudentModal) {
+                      addStudentModal.classList.add("hidden");
+                      alert("Student added successfully!");
+                    }
+                  } catch (error) {
+                    console.error("Error adding student:", error);
+                    alert("Failed to add student. Please try again.");
+                  }
+                }
+              });
+            });
+          } catch (error) {
+            console.error("Error loading available students:", error);
+            availableStudentsList.innerHTML = `
+              <div class="text-center p-4 text-red-500">
+                Error loading students. Please try again.
+              </div>
+            `;
+          }
+        }
+
+        // Available students search
+        const availableStudentSearch = document.getElementById(
+          "available-student-search",
+        ) as HTMLInputElement;
+        if (availableStudentSearch) {
+          availableStudentSearch.addEventListener("input", async () => {
+            const query = availableStudentSearch.value.toLowerCase();
+            const studentItems = document.querySelectorAll(
+              "#available-students-list > div",
+            );
+
+            studentItems.forEach((item) => {
+              const name =
+                item
+                  .querySelector(".font-medium")
+                  ?.textContent?.toLowerCase() || "";
+
+              if (name.includes(query)) {
+                (item as HTMLElement).style.display = "";
+              } else {
+                (item as HTMLElement).style.display = "none";
+              }
+            });
+          });
+        }
+      });
+    </script>
+
+    <!-- Add Student Overlay/Modal -->
+    <div
+      id="add-student-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+    >
+      <div
+        class="bg-white rounded-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+      >
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold">Add Students</h2>
+          <button
+            id="close-add-modal"
+            class="text-gray-500 hover:text-gray-700"
+          >
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+
+        <div class="mb-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Available Students</h3>
+            <button
+              id="new-student-btn"
+              class="text-primary hover:text-primary/80 flex items-center gap-1"
+            >
+              <i class="fas fa-plus-circle"></i> New Student
+            </button>
+          </div>
+
+          <div class="border rounded-lg overflow-hidden">
+            <div class="p-3 border-b bg-gray-50 flex items-center">
+              <input
+                type="text"
+                id="available-student-search"
+                placeholder="Search available students..."
+                class="px-3 py-1 border rounded-lg text-sm w-full"
+              />
+            </div>
+            <div
+              id="available-students-list"
+              class="max-h-64 overflow-y-auto p-2"
+            >
+              <!-- Available students will be rendered here by JavaScript -->
+              <div class="text-center p-4 text-gray-500">
+                Loading available students...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- New Student Modal -->
+    <div
+      id="new-student-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+    >
+      <div class="bg-white rounded-xl p-8 max-w-lg w-full">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold">Create New Student</h2>
+          <button
+            id="close-new-student-modal"
+            class="text-gray-500 hover:text-gray-700"
+          >
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+
+        <form id="new-student-form" class="space-y-4">
+          <div>
+            <label
+              for="student-name"
+              class="block text-sm font-medium text-gray-700"
+            >
+              Student Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="student-name"
+              name="name"
+              required
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+            />
+          </div>
+
+          <div>
+            <label
+              for="student-age"
+              class="block text-sm font-medium text-gray-700"
+            >
+              Age <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              id="student-age"
+              name="age"
+              min="5"
+              max="12"
+              required
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+            />
+          </div>
+
+          <div>
+            <label
+              for="student-grade"
+              class="block text-sm font-medium text-gray-700"
+            >
+              Grade
+            </label>
+            <select
+              id="student-grade"
+              name="grade"
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+            >
+              <option value="">Auto-assign based on age</option>
+              <option value="1st">1st Grade</option>
+              <option value="2nd">2nd Grade</option>
+              <option value="3rd">3rd Grade</option>
+              <option value="4th">4th Grade</option>
+            </select>
+            <p class="text-xs text-gray-500 mt-1">
+              If not selected, grade will be determined by age
+            </p>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              id="cancel-new-student"
+              class="px-4 py-2 text-sm border border-gray-300 rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 text-sm border border-transparent rounded-md shadow-sm text-white bg-primary hover:bg-primary/90"
+            >
+              Create Student
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add "Add New Student" floating button -->
+    <div class="fixed bottom-8 right-8 z-20">
+      <button
+        id="floating-add-student-btn"
+        class="w-14 h-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center hover:bg-primary/90 transition-all"
+      >
+        <i class="fas fa-plus text-xl"></i>
+      </button>
+    </div>
+  </main>
+</Layout>

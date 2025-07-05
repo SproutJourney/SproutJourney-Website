@@ -1,0 +1,752 @@
+---
+import AudioElement from "../components/AudioElement.astro";
+import ChatBubble from "../components/ChatBubble.astro";
+import Layout from "../layouts/Layout.astro";
+
+import { YouTube } from "@astro-community/astro-embed-youtube";
+---
+
+<Layout title="Sprout Journey">
+  <main class="relative">
+    <!-- Add direct dashboard link for testing -->
+    <div class="fixed top-4 right-4 z-50">
+      <a
+        href="/dashboard"
+        class="bg-primary text-white px-4 py-2 rounded-lg shadow-md hover:bg-primary/90 transition-all"
+      >
+        Go to Dashboard
+      </a>
+    </div>
+
+    <!-- Hero Section -->
+    <section
+      class="min-h-screen bg-cover bg-center flex flex-col items-center justify-center text-center px-4 md:px-8 lg:px-16"
+      style="background-image: url('/background.png');"
+    >
+      <div
+        class="md:flex flex-col lg:items-end lg:justify-start items-center justify-center xl:gap-12 lg:gap-12 gap-8 h-[55rem] my-8 rounded-[4rem] mx-12 lg:p-12 p-4 hidden"
+        id="background"
+      >
+        <span
+          class="xl:text-[3.2rem] text-xl xl:mt-24 xl:mr-12 font-ladyrose text-white tracking-wider lg:leading-[4rem]"
+        >
+          Sprout <span class="text-cyan-300">Smarter</span>: Learn, <br />
+          Play, and Grow with <span class="text-cyan-300">AI</span>
+        </span>
+
+        <span
+          class="flex flex-col xl:w-[40%] xl:mr-12 text-white xl:text-2xl lg:text-lg lg:font-light"
+        >
+          <span class="text-white font-body font-bold xl:text-2xl">
+            Create and deliver immersive learning experiences
+          </span>
+          that engage students through AI-powered games, Multilingual, Adaptive,
+          Fun, and Tailored for every learner.
+        </span>
+
+        <div class="flex flex-col gap-4 lg:items-end w-full xl:mr-12">
+          <a
+            href="/join"
+            class="bg-secondary text-primary py-2 xl:px-12 xl:text-2xl lg:px-8 lg:text-xl lg:font-medium lg:w-fit w-full font-black uppercase rounded-3xl flex items-center justify-center"
+          >
+            join alpha program
+          </a>
+
+          <a
+            href="/about"
+            class="lg:border-[1px] text-center border-0 border-secondary uppercase xl:text-2xl lg:text-xl text-secondary lg:font-semibold font-black lg:bg-transparent bg-primary lg:w-fit py-2 px-8 rounded-3xl"
+          >
+            learn more
+          </a>
+        </div>
+      </div>
+
+      <!-- splash page mobile -->
+
+      <div class="lg:hidden block">
+        <img
+          src="/background-mobile.png"
+          alt="background"
+          class="scale-110 my-4"
+        />
+
+        <div class="flex flex-col gap-2">
+          <span class="text-4xl font-bold">
+            <span class="text-[1.6rem]">
+              Learn, Play, and Grow with
+
+              <span class="text-extra_text1">AI</span>
+            </span>
+          </span>
+
+          <span class="font-light">
+            <strong class="text-lg">
+              Create and deliver immersive learning experiences
+            </strong>
+            <br />
+            that engage students through AI-powered games, Multilingual, Adaptive,
+            Fun, and Tailored for every learner.
+          </span>
+
+          <div
+            class="flex flex-col gap-2 mt-2 -mb-8 lg:items-end w-full xl:mr-12"
+          >
+            <a
+              href="/join"
+              class="bg-primary text-secondary py-2 xl:px-12 xl:text-2xl lg:px-8 lg:text-xl lg:font-medium lg:w-fit w-full font-black uppercase rounded-3xl flex items-center justify-center"
+            >
+              join alpha program
+            </a>
+
+            <a
+              href="/about"
+              class="lg:border-[1px] text-center border-0 border-secondary uppercase xl:text-2xl lg:text-xl text-primary lg:font-semibold font-black lg:bg-transparent bg-secondary lg:w-fit py-2 px-8 rounded-3xl"
+            >
+              learn more
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- demo page -->
+
+      <div
+        class="flex lg:flex-row flex-col lg:items-center lg:justify-between lg:w-[90%] lg:mx-auto md:gap-8 gap-4 md:py-12 py-4 lg:mt-0 mt-8"
+      >
+        <div
+          class="font-bold text-4xl text-center flex md:hidden gap-2 items-center justify-center"
+        >
+          <span class="uppercase">
+            see <span class="text-extra_text2">us</span>
+          </span>
+          <span class="uppercase"> in </span>
+          <span class="uppercase text-extra_text2"> action </span>
+        </div>
+
+        <YouTube id="https://youtu.be/vjehhSUyJHg" class="w-full rounded-xl" />
+
+        <div
+          class="font-bold xl:text-9xl lg:text-7xl md:text-5xl text-4xl lg:text-left text-center md:flex hidden flex-col"
+        >
+          <span class="uppercase">
+            see <span class="text-extra_text2">us</span>
+          </span>
+          <span class="uppercase"> in </span>
+          <span class="uppercase text-extra_text2"> action </span>
+        </div>
+      </div>
+
+      <!-- about page -->
+
+      <div
+        class="flex flex-col lg:flex-row gap-6 lg:gap-12 tracking-widest p-4 lg:w-[90%] mx-auto"
+      >
+        <div
+          class="flex flex-col gap-4 lg:items-start lg:text-left items-center text-center"
+        >
+          <span class="lg:text-5xl text-3xl font-header font-bold">
+            <span class="text-extra_text2">Children Learn</span> Faster
+            <span class="text-extra_text2">with</span> Artificial Intelligence
+          </span>
+
+          <div class="flex lg:flex-row flex-col gap-4 lg:items-end">
+            <div
+              class="text-lg lg:text-2xl font-normal lg:w-[80%] flex flex-col gap-4"
+            >
+              <span>
+                Recent research shows that AI-based educational tools
+                significantly accelerate learning by providing personalized,
+                adaptive content. A 2022 study from Stanford University found
+                that children using AI-enabled platforms progress 30% faster in
+                grasping new concepts compared to traditional methods. This is
+                because AI tailors lessons to each child's unique learning
+                style, making content more engaging and easier to understand.
+              </span>
+              <span>
+                SproutJourney leverages this power by offering multi-agent AI
+                models like Eli the Elephant to teach subjects through
+                interactive stories, adaptive quizzes, and instant doubt
+                resolution. Our platform ensures a personalized learning
+                journey, fostering critical thinking and real-world
+                problem-solving skills. <br />
+              </span>
+              <span class="italic">
+                Stanford University, 2022 Study on AI in Education
+              </span>
+            </div>
+
+            <img
+              src="/tomandjerry.jpg"
+              alt="tom and jerry illustration"
+              class="h-[24rem] rounded-xl"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- chatting -->
+
+      <div class="lg:flex hidden my-24 gap-12 mx-auto w-[90%]">
+        <div class="flex flex-col w-full gap-4">
+          <div
+            class="flex h-full w-full justify-start items-start flex-col gap-4"
+            id="messagecontainer"
+          >
+            <ChatBubble
+              message=`Hello! It's important to take care of your health and hygiene so you can stay strong, active, and happy. \n\n 
+        First, always wash your hands with soap, especially before eating and after playing, to get rid of germs that can make you sick. \n\n 
+        Eating healthy foods like fruits, vegetables, and whole grains gives your body the energy it needs to grow and stay strong. \n\n 
+        Brushing your teeth twice a day helps protect them from cavities and keeps your smile bright. \n\n 
+        Make sure you get enough sleep every night, as it helps your body rest and recover. \n\n 
+        Finally, taking regular baths or showers helps keep your skin clean and fresh. \n\n 
+        By following these simple habits, you'll stay healthy and ready for fun adventures every day!`
+              src="/audio/learningtime-main.mp3"
+              ;
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-12">
+          <div class="flex items-center justify-center gap-4 max-w-[30rem]">
+            <button
+              class="bg-secondary text-primary font-semibold w-[40rem] py-10 items-start p-4 flex justify-start text-2xl rounded-xl duration-300 transition-all flex-col"
+              id="storytime"
+            >
+              <span class="text-left text-3xl">Story Time</span>
+              <span class="text-sm italic text-left font-normal"
+                >Dive into exciting stories with Eli the Elephant, <br /> making
+                learning fun and memorable.</span
+              >
+            </button>
+          </div>
+
+          <div class="flex items-center justify-center gap-4 w-[30rem]">
+            <button
+              class="text-secondary bg-primary font-semibold w-[40rem] py-10 items-start p-4 flex justify-start text-2xl rounded-xl duration-300 transition-all flex-col"
+              id="learningtime"
+            >
+              <span class="text-left text-3xl">Learning Time</span>
+              <span class="text-sm italic text-left font-normal"
+                >Focus on key topics with interactive lessons <br /> that match your
+                pace and needs.</span
+              >
+            </button>
+          </div>
+
+          <div class="flex items-center justify-center gap-4 w-[30rem]">
+            <button
+              class="text-secondary bg-primary font-semibold w-[40rem] py-10 items-start p-4 flex justify-start text-2xl rounded-xl duration-300 transition-all flex-col"
+              id="thinkingtime"
+            >
+              <span class="text-left text-3xl">Thinking Time</span>
+              <span class="text-sm italic text-left font-normal"
+                >Challenge your mind with quizzes that encourage <br /> problem-solving
+                and real-world application.</span
+              >
+            </button>
+          </div>
+
+          <div class="flex items-center justify-center gap-4 w-[30rem]">
+            <button
+              class="text-secondary bg-primary font-semibold w-[40rem] py-10 items-start p-4 flex justify-start text-2xl rounded-xl duration-300 transition-all flex-col"
+              id="funtime"
+            >
+              <span class="text-left text-3xl">Fun Time</span>
+              <span class="text-sm italic text-left font-normal"
+                >Interact freely with AI, reinforcing what you've <br /> learned
+                through playful, engaging conversations.</span
+              >
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col lg:hidden">
+        <div class="flex flex-col gap-2">
+          <span class="text-4xl pt-4 font-semibold text-primary ml-2"
+            >Story Time</span
+          >
+          <span class="p-2"
+            >Dive into exciting stories with Eli the Elephant, making learning
+            fun and memorable.</span
+          >
+
+          <AudioElement source="/audio/storytime-main.mp3" id="storytime" />
+        </div>
+        <div class="flex flex-col gap-2">
+          <span class="text-4xl pt-4 font-semibold text-primary ml-2"
+            >Learning Time</span
+          >
+          <span class="p-2"
+            >Focus on key topics with interactive lessons that match your pace
+            and needs.</span
+          >
+
+          <AudioElement
+            source="/audio/learningtime-main.mp3"
+            id="learningtime"
+          />
+        </div>
+        <div class="flex flex-col gap-2">
+          <span class="text-4xl pt-4 font-semibold text-primary ml-2"
+            >Thinking Time</span
+          >
+          <span class="p-2"
+            >Challenge your mind with quizzes that encourage problem-solving and
+            real-world application.</span
+          >
+
+          <AudioElement
+            source="/audio/thinkingtime-main.mp3"
+            id="thinkingtime"
+          />
+          <div class="relative hidden md:block">
+            <button
+              id="audioIcon"
+              class="w-16 h-16 flex items-center justify-center bg-gray-800 text-white rounded-full shadow-md cursor-pointer"
+            >
+              <i id="icon" class="fa-solid fa-play text-3xl"></i>
+            </button>
+            <audio id="audioSource" src="/audio/thinkingtime-main.mp3"></audio>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <span class="text-4xl pt-4 font-semibold text-primary ml-2"
+            >Fun Time</span
+          >
+          <span class="p-2"
+            >Interact freely with AI, reinforcing what you've learned through
+            playful, engaging conversations.</span
+          >
+
+          <AudioElement source="/audio/funtime-main.mp3" id="funtime" />
+        </div>
+      </div>
+
+      <!-- memorial -->
+
+      <div
+        class="bg-secondary text-primary m-8 p-8 rounded-[3rem] md:flex flex-col gap-4 hidden"
+      >
+        <span
+          class="xl:text-5xl lg:text-4xl md:text-3xl text-3xl font-header font-semibold text-center lg:text-left"
+        >
+          Discover What our Parents and Educational Institutions Say about Us
+        </span>
+
+        <div class="flex md:flex-row flex-col justify-between lg:gap-12 gap-8">
+          <div
+            class="bg-primary text-white rounded-xl p-4 flex flex-col gap-2 flex-1"
+          >
+            <span class="font-body font-bold text-2xl"
+              >Prasansa Agrawal, Hyderabad</span
+            >
+            <span class="flex-grow">
+              SproutJourney has been life-changing for my son, who has a
+              learning disorder. Eli the Elephant's interactive stories and
+              tailored pacing have made it easier for him to understand complex
+              topics like ethics and social values. The personalized experience
+              allows him to learn without feeling overwhelmed, and I've noticed
+              a marked improvement in his ability to think critically. The best
+              part? He's excited about learning for the first time
+            </span>
+            <span class="italic text-lg"
+              >Parent of a Child with a Learning Disorder</span
+            >
+          </div>
+
+          <div
+            class="bg-primary text-white rounded-xl p-4 flex flex-col gap-2 flex-1"
+          >
+            <span class="font-body font-bold text-2xl"
+              >Anjali Deshmukh, Delhi</span
+            >
+            <span class="flex-grow">
+              Kushal Agrawal, the founder of SproutJourney, gave us access to
+              test the platform, and even in this early stage, it's been a
+              fantastic learning tool. My Grade 3 students are hooked on Eli the
+              Elephant's lessons! The stories not only keep them engaged, but
+              they're also learning valuable life lessons and ethics. The
+              adaptive quizzes encourage deeper thinking rather than rote
+              learning. I can't wait for the full release, but even now, it's
+              making a positive impact in my classroom.
+            </span>
+            <span class="italic text-lg">Grade 3 Teacher</span>
+          </div>
+
+          <div
+            class="bg-primary text-white rounded-xl p-4 flex flex-col gap-2 flex-1"
+          >
+            <span class="font-body font-bold text-2xl"
+              >Rohan Mehta, Hyderabad</span
+            >
+            <span class="flex-grow">
+              My daughter loves Eli the Elephant's lessons! She's learning about
+              ethics and social sciences in a way that's both entertaining and
+              meaningful. I've seen her become more thoughtful in her daily
+              interactions, often discussing the stories and lessons she's
+              learned. SproutJourney has made it easy for her to grasp important
+              values while having fun.
+            </span>
+            <span class="italic text-lg">Parent of a 9 year old</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-primary md:hidden flex flex-col gap-4 py-8">
+        <h2 class="text-4xl font-header font-bold text-center lg:text-left">
+          Testimonials
+        </h2>
+
+        <div class="relative h-[43rem] overflow-hidden" id="carousel">
+          <div
+            class="absolute w-full transition-transform duration-500 ease-in-out flex"
+            id="carouselTrack"
+          >
+            <!-- Slide 1 -->
+            <div class="w-full flex-shrink-0 px-4">
+              <div
+                class="bg-primary text-white rounded-xl p-8 h-full flex flex-col gap-4"
+              >
+                <h3 class="font-body font-bold text-2xl">
+                  Prasansa Agrawal, <span class="text-lg">Hyderabad</span>
+                </h3>
+                <p class="flex-grow text-lg">
+                  SproutJourney has been life-changing for my son, who has a
+                  learning disorder. Eli the Elephant's interactive stories and
+                  tailored pacing have made it easier for him to understand
+                  complex topics like ethics and social values. The personalized
+                  experience allows him to learn without feeling overwhelmed,
+                  and I've noticed a marked improvement in his ability to think
+                  critically. The best part? He's excited about learning for the
+                  first time
+                </p>
+                <span class="italic text-lg"
+                  >Parent of a Child with a Learning Disorder</span
+                >
+              </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="w-full flex-shrink-0 px-4">
+              <div
+                class="bg-primary text-white rounded-xl p-8 h-full flex flex-col gap-4"
+              >
+                <h3 class="font-body font-bold text-2xl">
+                  Anjali Deshmukh, <br />
+                  <span class="text-lg">Delhi</span>
+                </h3>
+                <p class="flex-grow text-lg">
+                  Kushal Agrawal, the founder of SproutJourney, gave us access
+                  to test the platform, and even in this early stage, it's been
+                  a fantastic learning tool. My Grade 3 students are hooked on
+                  Eli the Elephant's lessons! The stories not only keep them
+                  engaged, but they're also learning valuable life lessons and
+                  ethics. The adaptive quizzes encourage deeper thinking rather
+                  than rote learning. I can't wait for the full release, but
+                  even now, it's making a positive impact in my classroom.
+                </p>
+                <span class="italic text-lg">Grade 3 Teacher</span>
+              </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="w-full flex-shrink-0 px-4">
+              <div
+                class="bg-primary text-white rounded-xl p-8 h-full flex flex-col gap-4"
+              >
+                <h3 class="font-body font-bold text-2xl">
+                  Rohan Mehta, <br />
+                  <span class="text-lg">Hyderabad</span>
+                </h3>
+                <p class="flex-grow text-lg">
+                  My daughter loves Eli the Elephant's lessons! She's learning
+                  about ethics and social sciences in a way that's both
+                  entertaining and meaningful. I've seen her become more
+                  thoughtful in her daily interactions, often discussing the
+                  stories and lessons she's learned. SproutJourney has made it
+                  easy for her to grasp important values while having fun.
+                </p>
+                <span class="italic text-lg">Parent of a 9 year old</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-center gap-2 -mt-8" id="carouselDots"></div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  #background {
+    background-image: url("/background.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+  }
+</style>
+
+<script>
+  declare global {
+    interface Window {
+      renderChatBubble: (message: string, src: string) => HTMLElement;
+    }
+  }
+
+  const audioIcon = document.getElementById("audioIcon") as HTMLButtonElement;
+  const icon = document.getElementById("icon") as HTMLElement;
+
+  const storytime = document.getElementById("storytime") as HTMLButtonElement;
+  const learningtime = document.getElementById(
+    "learningtime",
+  ) as HTMLButtonElement;
+  const thinkingtime = document.getElementById(
+    "thinkingtime",
+  ) as HTMLButtonElement;
+  const funtime = document.getElementById("funtime") as HTMLButtonElement;
+
+  const messagecontainer = document.getElementById(
+    "messagecontainer",
+  ) as HTMLDivElement;
+
+  let audio = document.getElementById("audioSource") as HTMLAudioElement;
+
+  const chats = [storytime, learningtime, thinkingtime, funtime];
+
+  const newClicked = () => {
+    chats.forEach((chat) => {
+      chat.classList.remove("bg-secondary");
+      chat.classList.add("bg-primary");
+      chat.classList.remove("text-primary");
+      chat.classList.add("text-secondary");
+    });
+  };
+
+  document.addEventListener("DOMContentLoaded", () => {
+    messagecontainer.innerHTML = "";
+    const message =
+      "Hello, my name is Eli the Elephant. \n\n Let's learn a story about health and hygiene! \n\n One sunny day in the jungle, my friend Zara the Zebra looked very tired. 'Eli, I feel so weak!' she said. \n\n 'Zara, have you been taking care of yourself?' I asked. \n\n 'I'm not sure,' she replied. \n\n I smiled and shared my simple health tips: \n\n 1. Wash Your Hands: 'Germs can make you sick, so always wash your hands before eating and after playing.' \n\n \n\n 2. Eat Healthy Foods: 'Fruits and veggies give you energy! Try not to eat too many sweets.' \n\n \n\n 3. Get Enough Sleep: 'Sleep helps you feel rested and ready to play.' \n\n \n\n 4. Stay Clean: 'Baths help wash away dirt and keep you healthy.'";
+
+    setTimeout(() => {
+      const chatBubble = window.renderChatBubble(
+        message,
+        "/audio/storytime-main.mp3",
+      );
+      messagecontainer.appendChild(chatBubble);
+
+      void chatBubble.offsetWidth;
+
+      chatBubble.classList.add("chat-bubble-container");
+    }, 100);
+  });
+
+  storytime.addEventListener("click", () => {
+    messagecontainer.innerHTML = "";
+    newClicked();
+    storytime.classList.toggle("bg-secondary");
+    storytime.classList.toggle("text-secondary");
+    storytime.classList.toggle("bg-primary");
+    storytime.classList.toggle("text-primary");
+
+    icon.classList.remove("fa-pause");
+    icon.classList.add("fa-play");
+
+    const message =
+      "Hello, my name is Eli the Elephant. \n\n Let's learn a story about health and hygiene! \n\n One sunny day in the jungle, my friend Zara the Zebra looked very tired. 'Eli, I feel so weak!' she said. \n\n 'Zara, have you been taking care of yourself?' I asked. \n\n 'I'm not sure,' she replied. \n\n I smiled and shared my simple health tips: \n\n 1. Wash Your Hands: 'Germs can make you sick, so always wash your hands before eating and after playing.' \n\n \n\n 2. Eat Healthy Foods: 'Fruits and veggies give you energy! Try not to eat too many sweets.' \n\n \n\n 3. Get Enough Sleep: 'Sleep helps you feel rested and ready to play.' \n\n \n\n 4. Stay Clean: 'Baths help wash away dirt and keep you healthy.'";
+
+    setTimeout(() => {
+      const chatBubble = window.renderChatBubble(
+        message,
+        "/audio/storytime-main.mp3",
+      );
+      messagecontainer.appendChild(chatBubble);
+
+      void chatBubble.offsetWidth;
+
+      chatBubble.classList.add("chat-bubble-container");
+    }, 100);
+  });
+
+  learningtime.addEventListener("click", () => {
+    messagecontainer.innerHTML = "";
+
+    newClicked();
+
+    learningtime.classList.toggle("bg-secondary");
+    learningtime.classList.toggle("text-secondary");
+    learningtime.classList.toggle("bg-primary");
+    learningtime.classList.toggle("text-primary");
+
+    icon.classList.remove("fa-pause");
+    icon.classList.add("fa-play");
+
+    const message = `Hello! It's important to take care of your health and hygiene so you can stay strong, active, and happy. \n\n 
+  First, always wash your hands with soap, especially before eating and after playing, to get rid of germs that can make you sick. \n\n 
+  Eating healthy foods like fruits, vegetables, and whole grains gives your body the energy it needs to grow and stay strong. \n\n 
+  Brushing your teeth twice a day helps protect them from cavities and keeps your smile bright. \n\n 
+  Make sure you get enough sleep every night, as it helps your body rest and recover. \n\n 
+  Finally, taking regular baths or showers helps keep your skin clean and fresh. \n\n 
+  By following these simple habits, you'll stay healthy and ready for fun adventures every day!`;
+
+    setTimeout(() => {
+      const chatBubble = window.renderChatBubble(
+        message,
+        "/audio/learningtime-main.mp3",
+      );
+      messagecontainer.appendChild(chatBubble);
+
+      void chatBubble.offsetWidth;
+
+      chatBubble.classList.add("chat-bubble-container");
+    }, 100);
+  });
+
+  thinkingtime.addEventListener("click", () => {
+    messagecontainer.innerHTML = "";
+
+    newClicked();
+
+    thinkingtime.classList.toggle("bg-secondary");
+    thinkingtime.classList.toggle("text-secondary");
+    thinkingtime.classList.toggle("bg-primary");
+    thinkingtime.classList.toggle("text-primary");
+
+    icon.classList.remove("fa-pause");
+    icon.classList.add("fa-play");
+
+    const message = `
+    here's a question for you! \n\n If you see your friend about to cheat on a test, what would you do? \n\n Would you help them, \n\n tell the teacher, \n\n ignore it, \n\n or suggest they study instead? \n\n What do you think is the best choice?`;
+
+    setTimeout(() => {
+      const chatBubble = window.renderChatBubble(
+        message,
+        "/audio/thinkingtime-main.mp3",
+      );
+      messagecontainer.appendChild(chatBubble);
+
+      void chatBubble.offsetWidth;
+
+      chatBubble.classList.add("chat-bubble-container");
+    }, 100);
+  });
+
+  funtime.addEventListener("click", () => {
+    messagecontainer.innerHTML = "";
+
+    newClicked();
+
+    funtime.classList.toggle("bg-secondary");
+    funtime.classList.toggle("text-secondary");
+    funtime.classList.toggle("bg-primary");
+    funtime.classList.toggle("text-primary");
+
+    icon.classList.remove("fa-pause");
+    icon.classList.add("fa-play");
+
+    const message = `
+    Hello Aarav, it's Eli the Elephant! It's fun time, and I have a joke for you: \n\n
+
+Why don't elephants use computers? \n\n
+
+Because they're afraid of the mouse! \n\n
+
+I hope that made you smile! Keep having fun and remember to stay healthy and happy!
+    `;
+
+    setTimeout(() => {
+      const chatBubble = window.renderChatBubble(
+        message,
+        "/audio/funtime-main.mp3",
+      );
+      messagecontainer.appendChild(chatBubble);
+
+      void chatBubble.offsetWidth;
+
+      chatBubble.classList.add("chat-bubble-container");
+    }, 100);
+  });
+
+  const style = document.createElement("style");
+  style.textContent = `
+  @keyframes popIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.8) translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .chat-bubble-container {
+    animation: popIn 0.3s ease-out forwards;
+  }
+`;
+  document.head.appendChild(style);
+
+  audioIcon.addEventListener("click", () => {
+    if (audio.paused) {
+      audio.play();
+      icon.classList.remove("fa-play");
+      icon.classList.add("fa-pause");
+    } else {
+      audio.pause();
+      icon.classList.remove("fa-pause");
+      icon.classList.add("fa-play");
+    }
+  });
+
+  const carousel = {
+    currentIndex: 0,
+    track: document.getElementById("carouselTrack") as HTMLDivElement,
+    slides: document.querySelectorAll("#carouselTrack > div"),
+    dotsContainer: document.getElementById("carouselDots") as HTMLDivElement,
+
+    init() {
+      // Create dots
+      this.slides.forEach((_, index) => {
+        const dot = document.createElement("button");
+        dot.className = `w-3 h-3 rounded-full transition-colors duration-300 ${
+          index === 0 ? "bg-primary" : "bg-gray-300"
+        }`;
+        dot.setAttribute("aria-label", `Go to slide ${index + 1}`);
+        dot.onclick = () => this.goToSlide(index);
+        this.dotsContainer.appendChild(dot);
+      });
+
+      // Start auto rotation
+      this.startAutoRotation();
+    },
+
+    goToSlide(index: number) {
+      this.currentIndex = index;
+      this.updateCarousel();
+    },
+
+    updateCarousel() {
+      // Update track position
+      this.track.style.transform = `translateX(-${this.currentIndex * 100}%)`;
+
+      // Update dots
+      const dots = this.dotsContainer.children;
+      Array.from(dots).forEach((dot, index) => {
+        dot.className = `w-3 h-3 rounded-full transition-colors duration-300 ${
+          index === this.currentIndex ? "bg-primary" : "bg-gray-300"
+        }`;
+      });
+    },
+
+    startAutoRotation() {
+      setInterval(() => {
+        this.currentIndex = (this.currentIndex + 1) % this.slides.length;
+        this.updateCarousel();
+      }, 2000); // Change slide every 5 seconds
+    },
+  };
+
+  // Initialize carousel
+  carousel.init();
+</script>

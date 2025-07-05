@@ -1,0 +1,135 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { supabase } from "../lib/supabase";
+---
+
+<Layout title="Login - Teacher Dashboard">
+    <main
+        class="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4"
+    >
+        <div
+            class="w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-lg"
+        >
+            <div class="text-center">
+                <img
+                    class="mx-auto h-20 w-auto"
+                    src="/sprout_journey.png"
+                    alt="Sprout Journey Logo"
+                />
+                <h1 class="mt-6 text-3xl font-bold text-primary">
+                    Teacher Login
+                </h1>
+                <p class="mt-2 text-sm text-gray-600">
+                    Enter your credentials to access the teacher dashboard
+                </p>
+            </div>
+
+            <div class="mt-8" id="login-form-container">
+                <form id="login-form" class="space-y-6">
+                    <div>
+                        <label
+                            for="username"
+                            class="block text-sm font-medium text-gray-700"
+                        >
+                            Username
+                        </label>
+                        <input
+                            id="username"
+                            name="emp_username"
+                            type="text"
+                            required
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
+              placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            for="password"
+                            class="block text-sm font-medium text-gray-700"
+                        >
+                            Password
+                        </label>
+                        <input
+                            id="password"
+                            name="emp_password"
+                            type="password"
+                            required
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
+              placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary"
+                        />
+                    </div>
+
+                    <div id="login-error" class="text-red-500 text-sm hidden">
+                        Invalid username or password. Please try again.
+                    </div>
+
+                    <div>
+                        <button
+                            type="submit"
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md
+              shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                        >
+                            Sign In
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        import { loginTeacher } from "../lib/supabase";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const loginForm = document.getElementById("login-form");
+            const loginError = document.getElementById("login-error");
+
+            // Check if user is already logged in
+            const teacher = localStorage.getItem("teacher");
+            if (teacher) {
+                window.location.href = "/dashboard";
+            }
+
+            if (loginForm) {
+                loginForm.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+
+                    if (loginError) {
+                        loginError.classList.add("hidden");
+                    }
+
+                    const formData = new FormData(loginForm as HTMLFormElement);
+                    const username = formData.get("emp_username") as string;
+                    const password = formData.get("emp_password") as string;
+
+                    try {
+                        const result = await loginTeacher({
+                            emp_username: username,
+                            emp_password: password,
+                        });
+
+                        if (result.success) {
+                            window.location.href = "/dashboard";
+                        } else {
+                            if (loginError) {
+                                loginError.textContent =
+                                    result.message ||
+                                    "Login failed. Please try again.";
+                                loginError.classList.remove("hidden");
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Login error:", error);
+                        if (loginError) {
+                            loginError.textContent =
+                                "An error occurred during login. Please try again.";
+                            loginError.classList.remove("hidden");
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</Layout>

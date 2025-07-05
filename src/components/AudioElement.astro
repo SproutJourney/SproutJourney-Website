@@ -1,0 +1,157 @@
+---
+interface Props {
+  source: string;
+  id: string;
+}
+
+const { source, id } = Astro.props;
+---
+
+<div
+  class="flex items-center justify-center mx-4 rounded-r-3xl gap-4 p-2 bg-gray-200"
+>
+  <button
+    id={`playPauseBtn-${id}`}
+    class="p-2 rounded-full hover:bg-gray-200"
+    aria-label="Play"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class={`play-icon-${id}`}
+    >
+      <polygon points="5 3 19 12 5 21 5 3"></polygon>
+    </svg>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class={`pause-icon-${id} hidden`}
+    >
+      <rect x="6" y="4" width="4" height="16"></rect>
+      <rect x="14" y="4" width="4" height="16"></rect>
+    </svg>
+  </button>
+
+  <span id={`timeDisplay-${id}`} class="text-sm translate-y-0.5 font-mono">0:00</span>
+
+  <button
+    id={`muteBtn-${id}`}
+    class="p-2 rounded-full hover:bg-gray-200"
+    aria-label="Mute"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class={`volume-icon-${id}`}
+    >
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+    </svg>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class={`mute-icon-${id} hidden`}
+    >
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <line x1="23" y1="9" x2="17" y2="15"></line>
+      <line x1="17" y1="9" x2="23" y2="15"></line>
+    </svg>
+  </button>
+
+  <audio id={`audioPlayer-${id}`} src={source} class="hidden"></audio>
+</div>
+
+<script define:vars={{ id }}>
+  const audio = document.getElementById(`audioPlayer-${id}`);
+  const playPauseBtn = document.getElementById(`playPauseBtn-${id}`);
+  const muteBtn = document.getElementById(`muteBtn-${id}`);
+  const timeDisplay = document.getElementById(`timeDisplay-${id}`);
+  const playIcon = document.querySelector(`.play-icon-${id}`);
+  const pauseIcon = document.querySelector(`.pause-icon-${id}`);
+  const volumeIcon = document.querySelector(`.volume-icon-${id}`);
+  const muteIcon = document.querySelector(`.mute-icon-${id}`);
+
+  function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  }
+
+  playPauseBtn?.addEventListener("click", () => {
+    // Pause all other audio players first
+    document.querySelectorAll("audio").forEach((otherAudio) => {
+      if (otherAudio.id !== `audioPlayer-${id}` && !otherAudio.paused) {
+        otherAudio.pause();
+        // Reset other players' UI
+        const otherId = otherAudio.id.replace("audioPlayer-", "");
+        document
+          .querySelector(`.play-icon-${otherId}`)
+          ?.classList.remove("hidden");
+        document
+          .querySelector(`.pause-icon-${otherId}`)
+          ?.classList.add("hidden");
+      }
+    });
+
+    if (audio.paused) {
+      audio.play();
+      playIcon?.classList.add("hidden");
+      pauseIcon?.classList.remove("hidden");
+    } else {
+      audio.pause();
+      playIcon?.classList.remove("hidden");
+      pauseIcon?.classList.add("hidden");
+    }
+  });
+
+  muteBtn?.addEventListener("click", () => {
+    audio.muted = !audio.muted;
+    if (audio.muted) {
+      volumeIcon?.classList.add("hidden");
+      muteIcon?.classList.remove("hidden");
+    } else {
+      volumeIcon?.classList.remove("hidden");
+      muteIcon?.classList.add("hidden");
+    }
+  });
+
+  audio?.addEventListener("timeupdate", () => {
+    if (timeDisplay) {
+      timeDisplay.textContent = formatTime(audio.currentTime);
+    }
+  });
+
+  audio?.addEventListener("ended", () => {
+    playIcon?.classList.remove("hidden");
+    pauseIcon?.classList.add("hidden");
+  });
+</script>

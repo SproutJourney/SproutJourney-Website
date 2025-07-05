@@ -1,0 +1,605 @@
+---
+// PeopleMarquee.astro
+const people_small = [
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+];
+
+const people_big = [
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+  {
+    name: "Kushal Agrawal",
+    image: "/pics/kushal.jpeg",
+    position: "Business and AI/ML Lead",
+  },
+  {
+    name: "Manav Agarwal",
+    image: "/pics/manav.jpeg",
+    position: "Creative Lead",
+  },
+  {
+    name: "Harsh Vardhan",
+    image: "/pics/harshvardhan.jpeg",
+    position: "Game Development Lead",
+  },
+  {
+    name: "Aditya Jyoti",
+    image: "/pics/aditya.jpg",
+    position: "Web Development Lead",
+  },
+  {
+    name: "Aadivishnu Gajendra",
+    image: "/pics/aadi.png",
+    position: "Devops Lead",
+  },
+  {
+    name: "Aran Agarwal",
+    image: "/pics/aran.jpeg",
+    position: "Operations Lead",
+  },
+];
+---
+
+<div class="marquee-container pb-10 lg:-mt-10 lg:pb-0 md:flex hidden">
+  <div class="marquee">
+    {
+      people_big.map((person) => (
+        <div class="marquee-item">
+          <img
+            src={person.image}
+            alt={person.name}
+            class="w-52 h-52 rounded-full"
+          />
+          <p class="mt-2 text-center text-2xl font-semibold">{person.name}</p>
+          <p class="text-lg">{person.position}</p>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<div class="lg:hidden flex flex-col gap-8">
+  {
+    people_small.map((person) => (
+      <div class="flex flex-col items-center justify-center">
+        <img
+          src={person.image}
+          alt={person.name}
+          class="w-52 h-52 rounded-full"
+        />
+        <p class="mt-2 text-center text-2xl font-semibold">{person.name}</p>
+        <p class="text-lg">{person.position}</p>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .marquee-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .marquee {
+    display: flex;
+    gap: 5rem;
+    white-space: nowrap;
+    animation: scroll 120s linear infinite;
+  }
+
+  .marquee-item {
+    flex: 0 0 auto;
+    padding: 0 1rem;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+
+  .marquee-container:hover .marquee {
+    animation-play-state: paused;
+  }
+</style>
+
+<script>
+  function setupMarquee() {
+    const container = document.querySelector(
+      ".marquee-container"
+    ) as HTMLDivElement;
+    const marquee = document.querySelector(".marquee") as HTMLDivElement;
+
+    const clone = marquee.cloneNode(true) as HTMLDivElement;
+    container.appendChild(clone);
+
+    marquee.style.animationDuration = `10000s`;
+    clone.style.animationDuration = `100s`;
+  }
+
+  document.addEventListener("astro:page-load", setupMarquee);
+</script>

@@ -1,0 +1,123 @@
+---
+const { message, source } = Astro.props;
+
+const paragraphs = message.split("\n\n");
+---
+
+<div class="flex items-start gap-2.5 chat-bubble-container">
+  <img class="lg:w-16 lg:h-16 w-8 h-8 rounded-full" src="/eli.png" alt="eli" />
+  <div
+    class="flex flex-col w-full lg:min-w-[20rem] lg:max-w-[50rem] min-w-[10rem] max-w-[20rem] leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl chat-bubble"
+  >
+    <div class="flex items-center space-x-2 rtl:space-x-reverse">
+      <span class="lg:text-2xl text-xl font-semibold text-gray-900"
+        >Eli the Eliphant</span
+      >
+    </div>
+    <div class="flex">
+      <div>
+        <p
+          class="lg:text-2xl text-lg font-normal py-2.5 text-gray-900 dark:text-white flex flex-col gap-4"
+        >
+          {
+            paragraphs.map((paragraph: string) => (
+              <p class="xl:text-xl text-sm lg:p-2 p-1">{paragraph}</p>
+            ))
+          }
+        </p>
+      </div>
+      <div class="relative">
+        <button
+          id="audioIcon"
+          class="w-16 h-16 flex items-center justify-center bg-gray-800 text-white rounded-full shadow-md cursor-pointer"
+        >
+          <i id="icon" class="fa-solid fa-play text-3xl"></i>
+        </button>
+        <audio id="audioSource" src={source}></audio>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes popIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.8) translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .chat-bubble-container {
+    animation: popIn 0.3s ease-out forwards;
+  }
+</style>
+
+<script>
+  // Client-side rendering function
+  window.renderChatBubble = (message: string, src: string): HTMLElement => {
+    const paragraphs = message.split("\n\n");
+    const container = document.createElement("div");
+    container.className = "flex items-start gap-2.5 chat-bubble-container";
+    container.innerHTML = `
+  <img class="lg:w-16 lg:h-16 w-8 h-8 rounded-full" src="/eli.png" alt="eli" />
+  <div
+    class="flex flex-col w-full lg:min-w-[20rem] lg:max-w-[50rem] min-w-[10rem] max-w-[20rem] leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl chat-bubble"
+  >
+    <div class="flex items-center space-x-2 rtl:space-x-reverse">
+      <span class="lg:text-2xl text-xl font-semibold text-gray-900"
+        >Eli the Eliphant</span
+      >
+    </div>
+    <div class="flex">
+      <div>
+        <p
+          class="lg:text-2xl text-lg font-normal py-2.5 text-gray-900 dark:text-white flex flex-col gap-4"
+        >
+          ${paragraphs.map((paragraph) => `<p class="text-2xl py-2">${paragraph}</p>`).join("")}
+        </p>
+      </div>
+      <div class="relative">
+        <button
+          id="audioIcon"
+          class="w-16 h-16 flex items-center justify-center bg-gray-800 text-white rounded-full shadow-md cursor-pointer"
+        >
+          <i id="icon" class="fa-solid fa-play text-3xl"></i>
+        </button>
+        <audio id="audioSource" src=${src}></audio>
+      </div>
+    </div>
+  </div>
+    `;
+
+    const audioElement = container.querySelector(
+      "#audioSource"
+    ) as HTMLAudioElement;
+    const audioButton = container.querySelector(
+      "#audioIcon"
+    ) as HTMLButtonElement;
+    const iconElement = container.querySelector("#icon") as HTMLElement;
+
+    // Function to toggle play/pause
+    const toggleAudio = () => {
+      if (audioElement.paused) {
+        audioElement.play();
+        iconElement.className = "fa-solid fa-pause text-3xl";
+      } else {
+        audioElement.pause();
+        iconElement.className = "fa-solid fa-play text-3xl";
+      }
+    };
+
+    // Add click event listener to the button
+    audioButton.addEventListener("click", toggleAudio);
+
+    // Auto-play audio when the chat bubble is rendered
+    audioElement.load();
+
+    return container;
+  };
+</script>

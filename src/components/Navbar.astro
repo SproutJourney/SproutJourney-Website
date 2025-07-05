@@ -1,0 +1,127 @@
+<nav class="flex w-full justify-between items-center">
+  <span
+    class="font-heroeau font-medium xl:text-3xl text-2xl translate-y-1 md:translate-y-0 text-primary uppercase flex"
+  >
+    <a href="/"> sprout journey </a>
+  </span>
+
+  <div class="flex xl:gap-12 lg:gap-10 items-center">
+    <a
+      href="/about"
+      class="lg:text-xl lg:flex hidden hover:underline underline-offset-4 duration-300 text-extra_text1 uppercase"
+      >about us</a
+    >
+    <a
+      href="/contact"
+      class="lg:text-xl lg:flex hidden hover:underline underline-offset-4 duration-300 text-extra_text1 uppercase"
+      >contact us</a
+    >
+    <a
+      href="/careers"
+      class="lg:text-xl lg:flex hidden hover:underline underline-offset-4 duration-300 text-extra_text1 uppercase"
+      >careers</a
+    >
+    <a
+      href="#"
+      class="lg:text-xl lg:flex hidden hover:underline underline-offset-4 duration-300 text-extra_text1 uppercase nav-dashboard"
+      >dashboard</a
+    >
+
+    <a
+      class="uppercase font-bold text-secondary bg-primary xl:px-8 px-6 xl:py-3 lg:py-2 lg:text-lg lg:flex hidden rounded-3xl"
+      href="/join">Join Us</a
+    >
+  </div>
+
+  <div class="lg:hidden">
+    <button
+      class="lg:hidden flex items-center fixed z-[100] bg-white rounded-full w-12 h-12 right-3 drop-shadow-2xl top-3 justify-center text-primary text-3xl"
+      id="navbutton"
+    >
+      <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <div
+      class="h-0 w-0 transition-all rounded-xl duration-300 z-10 bg-white fixed top-0 left-0 flex flex-col text-4xl justify-around items-center"
+      id="nav"
+    >
+      <a
+        href="/home"
+        class="hover:underline underline-offset-4 duration-300 text-extra_text1 text-opacity-0 transition-all uppercase"
+        id="home">home</a
+      >
+      <a
+        href="/about"
+        class="hover:underline underline-offset-4 duration-300 text-extra_text1 text-opacity-0 transition-all uppercase"
+        id="about">about us</a
+      >
+      <a
+        href="/contact"
+        class="hover:underline underline-offset-4 duration-300 text-extra_text1 text-opacity-0 transition-all uppercase"
+        id="contact">contact us</a
+      >
+      <a
+        href="/careers"
+        class="hover:underline underline-offset-4 duration-300 text-extra_text1 text-opacity-0 transition-all uppercase"
+        id="careers">careers</a
+      >
+      <a
+        href="#"
+        class="hover:underline underline-offset-4 duration-300 text-extra_text1 text-opacity-0 transition-all uppercase nav-dashboard"
+        id="dashboard">dashboard</a
+      >
+
+      <a
+        href="/join"
+        class="hover:underline font-bold underline-offset-4 duration-300 text-extra_text1 text-opacity-0 transition-all uppercase"
+        id="join">Join Us</a
+      >
+    </div>
+  </div>
+</nav>
+
+<script>
+  const navbutton = document.getElementById("navbutton") as HTMLButtonElement;
+  const nav = document.getElementById("nav") as HTMLDivElement;
+
+  const about = document.getElementById("about") as HTMLAnchorElement;
+  const contact = document.getElementById("contact") as HTMLAnchorElement;
+  const careers = document.getElementById("careers") as HTMLAnchorElement;
+  const join = document.getElementById("join") as HTMLAnchorElement;
+  const home = document.getElementById("home") as HTMLAnchorElement;
+
+  navbutton.addEventListener("click", () => {
+    nav.classList.toggle("h-0");
+    nav.classList.toggle("w-0");
+    nav.classList.toggle("h-full");
+    nav.classList.toggle("w-full");
+
+    about.classList.toggle("text-opacity-0");
+    contact.classList.toggle("text-opacity-0");
+    careers.classList.toggle("text-opacity-0");
+    join.classList.toggle("text-opacity-0");
+    home.classList.toggle("text-opacity-0");
+  });
+
+  // Handle dashboard navigation with auth check
+  document.addEventListener("DOMContentLoaded", () => {
+    const dashboardLinks = document.querySelectorAll(".nav-dashboard");
+
+    dashboardLinks.forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        // Check if teacher is logged in by checking localStorage
+        const teacher = localStorage.getItem("teacher");
+
+        if (teacher) {
+          // User is logged in, redirect to dashboard
+          window.location.href = "/dashboard";
+        } else {
+          // User is not logged in, redirect to login page
+          window.location.href = "/login";
+        }
+      });
+    });
+  });
+</script>

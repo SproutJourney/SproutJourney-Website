@@ -1,0 +1,1370 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { supabase } from "../../lib/supabase";
+import type { Student } from "../../lib/models";
+
+// This function tells Astro which paths to pre-render
+export async function getStaticPaths() {
+    try {
+        // Fetch all students from Supabase
+        const { data: students, error } = await supabase
+            .from("students")
+            .select("id");
+
+        if (error) {
+            console.error("Error fetching students:", error);
+            return [{ params: { id: "default" } }];
+        }
+
+        // Return an array of objects with the params property
+        return students.map((student) => ({
+            params: { id: student.id },
+        }));
+    } catch (error) {
+        console.error("Error in getStaticPaths:", error);
+        // Return a default path in case of error
+        return [{ params: { id: "default" } }];
+    }
+}
+
+const { id } = Astro.params;
+
+// Try to fetch initial student data server-side
+let initialStudent = null;
+try {
+    const { data: student, error } = await supabase
+        .from("students")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+    if (!error && student) {
+        initialStudent = student;
+    }
+} catch (error) {
+    console.error("Error fetching initial student data:", error);
+}
+
+// Initialize with empty data - we'll load actual data on client side
+const studentStats = {
+    totalLessons: 0,
+    averageProgress: 0,
+    topSubject: "Science",
+    improvementArea: "Financial Literacy",
+    activeStreak: 0,
+    lessonsCompleted: 0,
+    averageEngagement: 0,
+};
+
+const recentLessons = [
+    {
+        title: "Environmental Science Project",
+        type: "Science",
+        completion: 92,
+        date: "2024-03-14",
+    },
+    {
+        title: "Algebra Fundamentals",
+        type: "Maths",
+        completion: 85,
+        date: "2024-03-13",
+    },
+    {
+        title: "Indian Cultural Heritage",
+        type: "Social Science and Indian Ethics",
+        completion: 79,
+        date: "2024-03-12",
+    },
+    {
+        title: "Basic Banking Concepts",
+        type: "Financial Literacy",
+        completion: 88,
+        date: "2024-03-11",
+    },
+];
+---
+
+<Layout title="Student Details">
+    <main class="w-full flex flex-col gap-8 mb-16 text-primary">
+        <!-- Student Header -->
+        <div
+            class="flex lg:flex-row flex-col justify-between items-center bg-secondary rounded-xl p-6 shadow-md"
+        >
+            <div class="flex flex-col">
+                <h1 class="text-4xl font-bold" id="student-name">
+                    Student Details
+                </h1>
+                <p class="text-lg opacity-75" id="student-info">
+                    Loading student information...
+                </p>
+            </div>
+            <div class="flex gap-4 mt-4 lg:mt-0">
+                <button
+                    onclick="history.back()"
+                    class="bg-primary text-secondary px-6 py-3 rounded-xl flex items-center gap-2 hover:opacity-90 transition-all"
+                >
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </button>
+            </div>
+        </div>
+
+        <!-- Student Stats -->
+        <div class="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-6">
+            <div
+                class="bg-white p-6 rounded-xl shadow-md border-l-4 border-extra_text1"
+            >
+                <div class="flex justify-between items-center">
+                    <p class="text-lg opacity-75">Average Score</p>
+                    <i class="fas fa-star-half-alt text-extra_text1 text-2xl"
+                    ></i>
+                </div>
+                <h2 class="text-3xl font-bold mt-2" id="averageScore">0%</h2>
+                <p class="text-sm mt-2 text-extra_text1">Across all subjects</p>
+            </div>
+
+            <div
+                class="bg-white p-6 rounded-xl shadow-md border-l-4 border-extra_text2"
+            >
+                <div class="flex justify-between items-center">
+                    <p class="text-lg opacity-75">Average Progress</p>
+                    <i class="fas fa-chart-line text-extra_text2 text-2xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold mt-2" id="averageProgress">0%</h2>
+                <p class="text-sm mt-2 text-extra_text2">Across all subjects</p>
+            </div>
+
+            <div
+                class="bg-white p-6 rounded-xl shadow-md border-l-4 border-primary"
+            >
+                <div class="flex justify-between items-center">
+                    <p class="text-lg opacity-75">Avg Engagement</p>
+                    <i class="fas fa-stopwatch text-primary text-2xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold mt-2" id="avgEngagement">-</h2>
+                <p class="text-sm mt-2">Seconds</p>
+            </div>
+
+            <div
+                class="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#478978]"
+            >
+                <div class="flex justify-between items-center">
+                    <p class="text-lg opacity-75">Learning Style</p>
+                    <i class="fas fa-brain text-[#478978] text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold mt-2" id="personalityTrait">-</h2>
+                <div class="flex flex-wrap gap-1 mt-2" id="personalityDesc">
+                    <span
+                        class="bg-[#478978]/10 text-[#478978] px-2 py-0.5 rounded text-xs"
+                    >
+                        Analyzing...
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Strengths -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-6">Strengths</h2>
+                <div class="flex flex-wrap gap-2" id="student-strengths">
+                    <span
+                        class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+                        >Loading...</span
+                    >
+                </div>
+            </div>
+
+            <!-- Weaknesses -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-6">Weaknesses</h2>
+                <div class="flex flex-wrap gap-2" id="student-weaknesses">
+                    <span
+                        class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm"
+                        >Loading...</span
+                    >
+                </div>
+            </div>
+
+            <!-- Cognitive Analysis -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-6">Cognitive Analysis</h2>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Radar Chart for Overall Cognitive Profile -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">
+                            Cognitive Profile
+                        </h3>
+                        <div class="aspect-square relative">
+                            <canvas id="cognitiveRadarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Bar Chart for Processing Metrics -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">
+                            Processing Metrics
+                        </h3>
+                        <div class="aspect-square relative">
+                            <canvas id="processingBarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Line Chart for Attention Trends -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">
+                            Attention & Memory
+                        </h3>
+                        <div class="aspect-square relative">
+                            <canvas id="attentionMemoryChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Doughnut Chart for Reasoning Style -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">
+                            Reasoning Style
+                        </h3>
+                        <div class="aspect-square relative">
+                            <canvas id="reasoningStyleChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fallback for loading state or errors -->
+                <div id="ai-analysis-loading" class="hidden">
+                    <ul class="list-disc pl-5 space-y-3 text-sm">
+                        <li class="text-gray-600">
+                            Analyzing learning patterns...
+                        </li>
+                        <li class="text-gray-600">
+                            Evaluating subject comprehension...
+                        </li>
+                        <li class="text-gray-600">
+                            Assessing cognitive strengths...
+                        </li>
+                        <li class="text-gray-600">
+                            Identifying learning style...
+                        </li>
+                        <li class="text-gray-600">
+                            Measuring conceptual understanding...
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- AI Recommendations -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-6">
+                    Personalized Recommendations
+                </h2>
+                <ul class="space-y-4 text-sm" id="ai-recommendations">
+                    <li class="flex items-start gap-3">
+                        <span
+                            class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold mt-0.5"
+                            >Priority 1</span
+                        >
+                        <p class="text-gray-600">
+                            Loading personalized recommendations...
+                        </p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </main>
+</Layout>
+
+<!-- Add Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script define:vars={{ initialStudent, id }}>
+    // Get the student data from the server-side props
+    const studentData = { initialStudent };
+    const studentId = { id };
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            let student = studentData.initialStudent;
+
+            // If no initial student data, try to fetch it client-side
+            if (!student) {
+                const response = await fetch(`/api/students/${studentId.id}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(
+                        errorData.error || "Failed to fetch student data",
+                    );
+                }
+                student = await response.json();
+            }
+
+            if (!student) {
+                throw new Error("No student data available");
+            }
+
+            // Calculate derived stats
+            const subjects = [
+                {
+                    name: "Mathematics",
+                    progress: student.maths_progress,
+                    score: student.maths_score,
+                },
+                {
+                    name: "Science",
+                    progress: student.science_progress,
+                    score: student.science_score,
+                },
+                {
+                    name: "Social Science",
+                    progress: student.social_science_ethics_progress,
+                    score: student.social_science_ethics_score,
+                },
+                {
+                    name: "Financial Literacy",
+                    progress: student.financial_literacy_progress,
+                    score: student.financial_literacy_score,
+                },
+            ];
+
+            // Find top subject and weaknesses
+            const topSubject = subjects.reduce((prev, current) =>
+                current.progress > prev.progress ? current : prev,
+            );
+            student.topSubject = topSubject.name;
+
+            // Identify weaknesses (subjects with progress < 60%)
+            student.weaknesses = subjects
+                .filter((subject) => subject.progress < 60)
+                .map((subject) => `${subject.name} (${subject.progress}%)`);
+
+            // Calculate total lessons (for demo, using a random number between 30-50)
+            student.totalLessons = Math.floor(Math.random() * 20) + 30;
+
+            // Calculate active streak (for demo, using a random number between 1-10)
+            student.activeStreak = Math.floor(Math.random() * 9) + 1;
+
+            // Update the UI with student data
+            updateStudentInfo(student);
+            updateStats(student);
+            updateStrengthsAndImprovements(student);
+            updateCognitiveAnalysis(student);
+        } catch (error) {
+            console.error("Error loading student data:", error);
+            // Show error message in the UI
+            const nameElement = document.getElementById("student-name");
+            const infoElement = document.getElementById("student-info");
+            const statsElements = document.querySelectorAll(".bg-white");
+
+            if (nameElement) {
+                nameElement.textContent = "Error Loading Student";
+            }
+            if (infoElement) {
+                infoElement.innerHTML = `
+                    <p class="text-red-500">Unable to load student information</p>
+                    <p class="text-sm text-gray-500 mt-1">${error.message}</p>
+                `;
+            }
+
+            // Clear out stats cards with error state
+            statsElements.forEach((element) => {
+                const titleElement = element.querySelector("p.text-lg");
+                const valueElement = element.querySelector("h2");
+                if (valueElement) {
+                    valueElement.innerHTML =
+                        '<span class="text-red-500">Error</span>';
+                }
+                if (titleElement) {
+                    titleElement.classList.add("opacity-50");
+                }
+            });
+        }
+    });
+
+    /**
+     * Updates the student header information
+     * @param {Object} student - The student object
+     */
+    function updateStudentInfo(student) {
+        const nameElement = document.getElementById("student-name");
+        const infoElement = document.getElementById("student-info");
+
+        if (nameElement) {
+            nameElement.textContent = student.name;
+        }
+
+        if (infoElement) {
+            infoElement.textContent = `Grade ${student.grade} • Age ${student.age}`;
+        }
+    }
+
+    /**
+     * Updates the student statistics cards
+     * @param {Object} student - The student object
+     */
+    function updateStats(student) {
+        // Calculate average score across all subjects
+        const subjects = [
+            {
+                score: student.maths_score || 0,
+            },
+            {
+                score: student.science_score || 0,
+            },
+            {
+                score: student.social_science_ethics_score || 0,
+            },
+            {
+                score: student.financial_literacy_score || 0,
+            },
+        ];
+
+        const averageScore = Math.round(
+            subjects.reduce((sum, subject) => sum + subject.score, 0) /
+                subjects.length,
+        );
+
+        // Update average score
+        const averageScoreElement = document.getElementById("averageScore");
+        if (averageScoreElement) {
+            averageScoreElement.textContent = `${averageScore}%`;
+        }
+
+        // Update average progress
+        const averageProgressElement =
+            document.getElementById("averageProgress");
+        if (averageProgressElement) {
+            const progress = Math.round(student.progress || 0);
+            averageProgressElement.textContent = `${progress}%`;
+        }
+
+        // Update average engagement
+        const avgEngagementElement = document.getElementById("avgEngagement");
+        if (avgEngagementElement) {
+            // Calculate average engagement from cognitive analysis data
+            const cognitiveData = student.cognitiveAnalysis || [];
+            let totalEngagementTime = 0;
+            let responseCount = 0;
+
+            if (Array.isArray(cognitiveData)) {
+                cognitiveData.forEach((interaction) => {
+                    if (
+                        interaction.timestamp_prompt &&
+                        interaction.timestamp_response
+                    ) {
+                        const promptTime = new Date(
+                            interaction.timestamp_prompt,
+                        );
+                        const responseTime = new Date(
+                            interaction.timestamp_response,
+                        );
+                        const engagementTime =
+                            (responseTime - promptTime) / 1000; // Convert to seconds
+                        totalEngagementTime += engagementTime;
+                        responseCount++;
+                    }
+                });
+            }
+
+            const averageEngagement =
+                responseCount > 0
+                    ? Math.round(totalEngagementTime / responseCount)
+                    : Math.floor(Math.random() * (600 - 100 + 1)) + 100; // Random number between 100-600
+            avgEngagementElement.textContent = `${averageEngagement}s`;
+        }
+    }
+
+    /**
+     * Updates the student strengths and improvements sections
+     * @param {Object} student - The student object
+     */
+    function updateStrengthsAndImprovements(student) {
+        const strengthsContainer = document.getElementById("student-strengths");
+        const weaknessesContainer =
+            document.getElementById("student-weaknesses");
+        const improvementsContainer = document.getElementById(
+            "student-improvements",
+        );
+
+        if (strengthsContainer) {
+            let strengthsHTML = "";
+            if (student.strengths && student.strengths.length > 0) {
+                student.strengths.forEach((strength) => {
+                    strengthsHTML += `
+            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+              ${strength}
+            </span>
+          `;
+                });
+            } else {
+                strengthsHTML =
+                    '<span class="text-gray-500">No strengths data available</span>';
+            }
+            strengthsContainer.innerHTML = strengthsHTML;
+        }
+
+        if (weaknessesContainer) {
+            let weaknessesHTML = "";
+            if (student.weaknesses && student.weaknesses.length > 0) {
+                student.weaknesses.forEach((weakness) => {
+                    weaknessesHTML += `
+            <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">
+              ${weakness}
+            </span>
+          `;
+                });
+            } else {
+                weaknessesHTML =
+                    '<span class="text-gray-500">No weaknesses data available</span>';
+            }
+            weaknessesContainer.innerHTML = weaknessesHTML;
+        }
+
+        if (improvementsContainer) {
+            let improvementsHTML = "";
+            if (student.improvements && student.improvements.length > 0) {
+                student.improvements.forEach((improvement) => {
+                    improvementsHTML += `
+            <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">
+              ${improvement}
+            </span>
+          `;
+                });
+            } else {
+                improvementsHTML =
+                    '<span class="text-gray-500">No improvements data available</span>';
+            }
+            improvementsContainer.innerHTML = improvementsHTML;
+        }
+    }
+
+    /**
+     * Updates the cognitive analysis section with AI-generated insights
+     * @param {Object} student - The student object
+     */
+    function updateCognitiveAnalysis(student) {
+        // Show loading state
+        const loadingElement = document.getElementById("ai-analysis-loading");
+        if (loadingElement) {
+            loadingElement.classList.remove("hidden");
+        }
+
+        // Check local storage for cached analysis
+        const cacheKey = `cognitive_analysis_${student.id}`;
+        const cachedData = localStorage.getItem(cacheKey);
+
+        if (cachedData) {
+            try {
+                const { analysis, timestamp } = JSON.parse(cachedData);
+                const cacheAge = Date.now() - timestamp;
+                // Use cache if it's less than 24 hours old
+                if (cacheAge < 24 * 60 * 60 * 1000) {
+                    console.log("Using cached cognitive analysis data");
+                    updateUIWithAnalysis(analysis, student);
+                    return;
+                }
+            } catch (error) {
+                console.error("Error parsing cached data:", error);
+                localStorage.removeItem(cacheKey); // Remove invalid cache
+            }
+        }
+
+        // Prepare student data for AI analysis
+        const studentData = {
+            cognitiveAnalysis: [
+                // Time Management / Problem Solving Sample
+                {
+                    turn_id: `${student.id}_1`,
+                    session_id: "latest_session",
+                    user_id: student.id,
+                    timestamp_prompt: new Date(
+                        student.lastActivity,
+                    ).toISOString(),
+                    timestamp_response: new Date(
+                        new Date(student.lastActivity).getTime() + 15000,
+                    ).toISOString(),
+                    ai_prompt_text:
+                        "Can you explain how you would organize your homework time?",
+                    user_response_text:
+                        "I try to do harder subjects first when I'm fresh",
+                    topic_tag: "time_management",
+                    prompt_type_tag: "creative_prompt",
+                    response_relevance_score: student.progress / 100,
+                    metacognitive_flags: student.strengths || [],
+                    novelty_score: 0.7,
+                    cross_session_link_id: null,
+                },
+                // Subject Knowledge Sample
+                {
+                    turn_id: `${student.id}_2`,
+                    session_id: "latest_session",
+                    user_id: student.id,
+                    timestamp_prompt: new Date(
+                        student.lastActivity,
+                    ).toISOString(),
+                    timestamp_response: new Date(
+                        new Date(student.lastActivity).getTime() + 20000,
+                    ).toISOString(),
+                    ai_prompt_text:
+                        "What was your approach to solving the last math problem?",
+                    user_response_text:
+                        "I broke it down into steps and checked my work",
+                    topic_tag: "mathematics",
+                    prompt_type_tag: "direct_recall",
+                    response_relevance_score: student.maths_score / 100,
+                    metacognitive_flags: ["problem_solving"],
+                    novelty_score: 0.5,
+                    cross_session_link_id: "prev_session_123",
+                },
+                // Creative Thinking Sample
+                {
+                    turn_id: `${student.id}_3`,
+                    session_id: "latest_session",
+                    user_id: student.id,
+                    timestamp_prompt: new Date(
+                        student.lastActivity,
+                    ).toISOString(),
+                    timestamp_response: new Date(
+                        new Date(student.lastActivity).getTime() + 30000,
+                    ).toISOString(),
+                    ai_prompt_text:
+                        "How would you design a solution to reduce plastic waste in your school?",
+                    user_response_text:
+                        "We could create a recycling program and educate students about reusable containers. Maybe even start a competition between classes.",
+                    topic_tag: "environmental_science",
+                    prompt_type_tag: "creative_prompt",
+                    response_relevance_score: 0.9,
+                    metacognitive_flags: [
+                        "creative_thinking",
+                        "problem_solving",
+                        "planning",
+                    ],
+                    novelty_score: 0.85,
+                    cross_session_link_id: null,
+                },
+                // Social Learning Sample
+                {
+                    turn_id: `${student.id}_4`,
+                    session_id: "latest_session",
+                    user_id: student.id,
+                    timestamp_prompt: new Date(
+                        student.lastActivity,
+                    ).toISOString(),
+                    timestamp_response: new Date(
+                        new Date(student.lastActivity).getTime() + 25000,
+                    ).toISOString(),
+                    ai_prompt_text:
+                        "How do you prefer to work on group projects?",
+                    user_response_text:
+                        "I like to help organize the team and make sure everyone understands their part. It's fun to share ideas and learn from others.",
+                    topic_tag: "collaboration",
+                    prompt_type_tag: "open_ended",
+                    response_relevance_score: 0.95,
+                    metacognitive_flags: [
+                        "social_awareness",
+                        "leadership",
+                        "communication",
+                    ],
+                    novelty_score: 0.75,
+                    cross_session_link_id: "group_projects_prev",
+                },
+            ],
+        };
+
+        // Call the AI analysis endpoint
+        fetch("/api/students/analysis", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(studentData),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then((data) => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Validate analysis structure
+                const analysis = data.analysis;
+                if (
+                    !analysis ||
+                    !analysis.pace_and_processing ||
+                    !analysis.attention_and_focus ||
+                    !analysis.reasoning_and_problem_solving ||
+                    !analysis.memory_and_synthesis ||
+                    !analysis.personality_profile
+                ) {
+                    throw new Error(
+                        "Invalid analysis data structure received from server",
+                    );
+                }
+
+                // Cache the analysis data with timestamp
+                const cacheData = {
+                    analysis,
+                    timestamp: Date.now(),
+                };
+                localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+
+                // Update UI with the analysis data
+                updateUIWithAnalysis(analysis, student);
+            })
+            .catch((error) => {
+                console.error("Error fetching AI analysis:", error);
+
+                if (loadingElement) {
+                    loadingElement.classList.remove("hidden");
+                    loadingElement.innerHTML = `
+                        <div class="text-center py-8">
+                            <div class="text-red-500 text-lg mb-2">Unable to generate cognitive analysis</div>
+                            <div class="text-gray-500 text-sm">Error: ${error.message}</div>
+                            <div class="text-gray-500 text-sm mt-4">
+                                This could be because:
+                                <ul class="list-disc text-left inline-block mt-2">
+                                    <li>The analysis service is still processing</li>
+                                    <li>Not enough cognitive data is available</li>
+                                    <li>There was an error in data processing</li>
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Update personality trait to show error state
+                const personalityTraitElement =
+                    document.getElementById("personalityTrait");
+                const personalityDescElement =
+                    document.getElementById("personalityDesc");
+                if (personalityTraitElement && personalityDescElement) {
+                    personalityTraitElement.textContent = "Not Available";
+                    personalityDescElement.innerHTML = `
+                        <span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs">
+                            Analysis incomplete
+                        </span>
+                    `;
+                }
+
+                const recommendationsContainer =
+                    document.getElementById("ai-recommendations");
+                if (recommendationsContainer) {
+                    recommendationsContainer.style.display = "none";
+                }
+            });
+    }
+
+    /**
+     * Updates the UI with cognitive analysis data
+     * @param {Object} analysis - The cognitive analysis data
+     * @param {Object} student - The student object
+     */
+    function updateUIWithAnalysis(analysis, student) {
+        // Hide loading element
+        const loadingElement = document.getElementById("ai-analysis-loading");
+        if (loadingElement) {
+            loadingElement.classList.add("hidden");
+        }
+
+        const recommendationsContainer =
+            document.getElementById("ai-recommendations");
+
+        // Store the personality profile in the student object
+        student.cognitiveAnalysis = {
+            personality_profile: analysis.personality_profile,
+        };
+
+        // Update the personality trait display
+        const personalityTraitElement =
+            document.getElementById("personalityTrait");
+        const personalityDescElement =
+            document.getElementById("personalityDesc");
+        if (personalityTraitElement && personalityDescElement) {
+            personalityTraitElement.textContent =
+                analysis.personality_profile.dominant_trait;
+
+            // Split the trait description into individual adjectives and create tags
+            const adjectives =
+                analysis.personality_profile.trait_description.split(", ");
+            const adjectivesHTML = adjectives
+                .map(
+                    (adj) => `
+                    <span class="bg-[#478978]/10 text-[#478978] px-2 py-0.5 rounded text-xs">
+                        ${adj}
+                    </span>
+                `,
+                )
+                .join("");
+            personalityDescElement.innerHTML = adjectivesHTML;
+        }
+
+        // Update strengths and weaknesses from cognitive assessment if available
+        if (analysis.cognitive_assessment) {
+            // Update strengths
+            const strengthsContainer =
+                document.getElementById("student-strengths");
+            if (
+                strengthsContainer &&
+                analysis.cognitive_assessment.strengths &&
+                analysis.cognitive_assessment.strengths.length > 0
+            ) {
+                let strengthsHTML = "";
+                analysis.cognitive_assessment.strengths.forEach((strength) => {
+                    strengthsHTML += `
+                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                        ${strength}
+                    </span>
+                    `;
+                });
+                strengthsContainer.innerHTML = strengthsHTML;
+            }
+
+            // Update weaknesses
+            const weaknessesContainer =
+                document.getElementById("student-weaknesses");
+            if (
+                weaknessesContainer &&
+                analysis.cognitive_assessment.weaknesses &&
+                analysis.cognitive_assessment.weaknesses.length > 0
+            ) {
+                let weaknessesHTML = "";
+                analysis.cognitive_assessment.weaknesses.forEach((weakness) => {
+                    weaknessesHTML += `
+                    <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">
+                        ${weakness}
+                    </span>
+                    `;
+                });
+                weaknessesContainer.innerHTML = weaknessesHTML;
+            }
+        }
+
+        // Create the charts
+        createCognitiveCharts(analysis);
+
+        // Generate personalized recommendations based on the analysis
+        const recommendations = generateRecommendations(analysis);
+
+        // Update recommendations container
+        if (recommendationsContainer) {
+            let recommendationsHTML = `
+                <li class="mb-4">
+                    <h3 class="font-semibold text-xl mb-4">${recommendations.key_takeaway}</h3>
+                </li>
+            `;
+
+            // Add strengths section
+            recommendationsHTML += `
+                <li class="mb-6">
+                    <h4 class="font-semibold text-green-700 mb-3">Leverage Strengths</h4>
+                    <ul class="space-y-4">
+            `;
+            recommendations.leverage_strengths.forEach((strength) => {
+                recommendationsHTML += `
+                    <li class="flex items-start gap-3">
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold mt-0.5">
+                            Strategy
+                        </span>
+                        <div>
+                            <p class="text-gray-800">${strength.recommendation}</p>
+                            <p class="text-sm text-gray-600 mt-1">${strength.rationale}</p>
+                        </div>
+                    </li>
+                `;
+            });
+            recommendationsHTML += `
+                    </ul>
+                </li>
+            `;
+
+            // Add growth areas section
+            recommendationsHTML += `
+                <li class="mb-6">
+                    <h4 class="font-semibold text-blue-700 mb-3">Support Growth Areas</h4>
+                    <ul class="space-y-4">
+            `;
+            recommendations.support_growth_areas.forEach((area) => {
+                recommendationsHTML += `
+                    <li class="flex items-start gap-3">
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold mt-0.5">
+                            Strategy
+                        </span>
+                        <div>
+                            <p class="text-gray-800">${area.recommendation}</p>
+                            <p class="text-sm text-gray-600 mt-1">${area.rationale}</p>
+                        </div>
+                    </li>
+                `;
+            });
+            recommendationsHTML += `
+                    </ul>
+                </li>
+            `;
+
+            recommendationsContainer.innerHTML = recommendationsHTML;
+            recommendationsContainer.style.display = "block";
+        }
+    }
+
+    /**
+     * Creates charts to visualize cognitive analysis data
+     * @param {Object} analysis - The cognitive analysis data
+     */
+    function createCognitiveCharts(analysis) {
+        // Define a consistent color scheme
+        const colors = {
+            primary: "#478978",
+            secondary: "#FFA500",
+            tertiary: "#6A5ACD",
+            quaternary: "#FF6B6B",
+            background: "rgba(71, 137, 120, 0.2)",
+            border: "rgba(71, 137, 120, 1)",
+            highlight: "rgba(255, 165, 0, 0.6)",
+            text: "#333333",
+        };
+
+        // 1. Radar Chart - Overall Cognitive Profile
+        const radarCtx = document.getElementById("cognitiveRadarChart");
+        if (radarCtx) {
+            // Extract data from analysis
+            const cognitiveData = {
+                labels: [
+                    "Processing Speed",
+                    "Attention",
+                    "Problem Solving",
+                    "Memory",
+                    "Creativity",
+                    "Verbal Expression",
+                ],
+                datasets: [
+                    {
+                        label: "Cognitive Profile",
+                        data: [
+                            // Normalize all values to 0-100 scale
+                            100 -
+                                Math.min(
+                                    100,
+                                    analysis.pace_and_processing
+                                        .cognitive_fluency_seconds * 5,
+                                ), // Lower is better
+                            analysis.attention_and_focus.topic_cohesion_percent,
+                            analysis.reasoning_and_problem_solving
+                                .creative_problem_solving_score * 100,
+                            analysis.memory_and_synthesis
+                                .short_term_recall_percent,
+                            analysis.pace_and_processing
+                                .deliberation_time_creative_seconds < 20
+                                ? 90
+                                : 70, // Creativity proxy
+                            Math.min(
+                                100,
+                                analysis.pace_and_processing
+                                    .verbal_expressiveness_avg_words * 2,
+                            ),
+                        ],
+                        fill: true,
+                        backgroundColor: colors.background,
+                        borderColor: colors.border,
+                        pointBackgroundColor: colors.border,
+                        pointBorderColor: "#fff",
+                        pointHoverBackgroundColor: "#fff",
+                        pointHoverBorderColor: colors.border,
+                    },
+                ],
+            };
+
+            new Chart(radarCtx, {
+                type: "radar",
+                data: cognitiveData,
+                options: {
+                    elements: {
+                        line: {
+                            borderWidth: 3,
+                        },
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true,
+                                color: "rgba(0, 0, 0, 0.1)",
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: {
+                                display: false,
+                            },
+                        },
+                    },
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                    },
+                },
+            });
+        }
+
+        // 2. Bar Chart - Processing Metrics
+        const barCtx = document.getElementById("processingBarChart");
+        if (barCtx) {
+            const processingData = {
+                labels: [
+                    "Response Time",
+                    "Creative Thinking",
+                    "Expression Level",
+                ],
+                datasets: [
+                    {
+                        label: "Processing Metrics",
+                        data: [
+                            analysis.pace_and_processing
+                                .cognitive_fluency_seconds,
+                            analysis.pace_and_processing
+                                .deliberation_time_creative_seconds,
+                            analysis.pace_and_processing
+                                .verbal_expressiveness_avg_words,
+                        ],
+                        backgroundColor: [
+                            colors.primary,
+                            colors.secondary,
+                            colors.tertiary,
+                        ],
+                        borderColor: [
+                            colors.border,
+                            colors.border,
+                            colors.border,
+                        ],
+                        borderWidth: 1,
+                    },
+                ],
+            };
+
+            new Chart(barCtx, {
+                type: "bar",
+                data: processingData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: "Value (seconds/words)",
+                            },
+                        },
+                        x: {
+                            ticks: {
+                                autoSkip: false,
+                            },
+                        },
+                    },
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const label = context.dataset.label || "";
+                                    const value = context.parsed.y;
+                                    const metric = context.label;
+
+                                    if (metric === "Expression Level") {
+                                        return `${label}: ${value} words`;
+                                    } else {
+                                        return `${label}: ${value} seconds`;
+                                    }
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+        }
+
+        // 3. Line Chart - Attention & Memory
+        const lineCtx = document.getElementById("attentionMemoryChart");
+        if (lineCtx) {
+            // Create some simulated data points based on the analysis
+            const cohesion =
+                analysis.attention_and_focus.topic_cohesion_percent;
+            const recall =
+                analysis.memory_and_synthesis.short_term_recall_percent;
+
+            // Simulate a trend with some variation
+            const cohesionTrend = [
+                Math.max(0, cohesion - 15 + Math.random() * 10),
+                Math.max(0, cohesion - 10 + Math.random() * 10),
+                Math.max(0, cohesion - 5 + Math.random() * 5),
+                cohesion,
+                Math.min(100, cohesion + 5 + Math.random() * 5),
+            ];
+
+            const recallTrend = [
+                Math.max(0, recall - 20 + Math.random() * 10),
+                Math.max(0, recall - 15 + Math.random() * 10),
+                Math.max(0, recall - 5 + Math.random() * 5),
+                recall,
+                Math.min(100, recall + 3 + Math.random() * 5),
+            ];
+
+            const attentionMemoryData = {
+                labels: ["Week 1", "Week 2", "Week 3", "Week 4", "Projected"],
+                datasets: [
+                    {
+                        label: "Topic Cohesion",
+                        data: cohesionTrend,
+                        borderColor: colors.primary,
+                        backgroundColor: "transparent",
+                        tension: 0.3,
+                    },
+                    {
+                        label: "Memory Recall",
+                        data: recallTrend,
+                        borderColor: colors.secondary,
+                        backgroundColor: "transparent",
+                        tension: 0.3,
+                    },
+                ],
+            };
+
+            new Chart(lineCtx, {
+                type: "line",
+                data: attentionMemoryData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: "Score (%)",
+                            },
+                        },
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const label = context.dataset.label || "";
+                                    const value = context.parsed.y.toFixed(1);
+                                    return `${label}: ${value}%`;
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+        }
+
+        // 4. Doughnut Chart - Reasoning Style
+        const doughnutCtx = document.getElementById("reasoningStyleChart");
+        if (doughnutCtx) {
+            // Extract reasoning style data or create reasonable defaults
+            const dominantStyle =
+                analysis.reasoning_and_problem_solving
+                    .dominant_reasoning_style || "Analytical";
+
+            // Calculate percentages based on dominant style
+            let analyticalPercent, creativePercent, practicalPercent;
+
+            switch (dominantStyle.toLowerCase()) {
+                case "analytical":
+                    analyticalPercent = 60 + Math.floor(Math.random() * 15);
+                    creativePercent = Math.floor(
+                        (100 - analyticalPercent) * 0.6,
+                    );
+                    practicalPercent =
+                        100 - analyticalPercent - creativePercent;
+                    break;
+                case "creative":
+                    creativePercent = 60 + Math.floor(Math.random() * 15);
+                    analyticalPercent = Math.floor(
+                        (100 - creativePercent) * 0.6,
+                    );
+                    practicalPercent =
+                        100 - analyticalPercent - creativePercent;
+                    break;
+                case "practical":
+                    practicalPercent = 60 + Math.floor(Math.random() * 15);
+                    analyticalPercent = Math.floor(
+                        (100 - practicalPercent) * 0.6,
+                    );
+                    creativePercent =
+                        100 - analyticalPercent - practicalPercent;
+                    break;
+                default:
+                    analyticalPercent = 40;
+                    creativePercent = 30;
+                    practicalPercent = 30;
+            }
+
+            const reasoningData = {
+                labels: ["Analytical", "Creative", "Practical"],
+                datasets: [
+                    {
+                        data: [
+                            analyticalPercent,
+                            creativePercent,
+                            practicalPercent,
+                        ],
+                        backgroundColor: [
+                            colors.primary,
+                            colors.secondary,
+                            colors.tertiary,
+                        ],
+                        borderColor: [
+                            colors.border,
+                            colors.border,
+                            colors.border,
+                        ],
+                        borderWidth: 1,
+                    },
+                ],
+            };
+
+            new Chart(doughnutCtx, {
+                type: "doughnut",
+                data: reasoningData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: "65%",
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const label = context.label || "";
+                                    const value = context.parsed;
+                                    const percentage = Math.round(
+                                        (value /
+                                            context.dataset.data.reduce(
+                                                (a, b) => a + b,
+                                                0,
+                                            )) *
+                                            100,
+                                    );
+                                    return `${label}: ${percentage}%`;
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+        }
+    }
+
+    /**
+     * Generates personalized recommendations based on cognitive analysis
+     * @param {Object} analysis - The cognitive analysis data
+     * @returns {Object} - Structured recommendations
+     */
+    function generateRecommendations(analysis) {
+        // Helper function to determine if a score is high or low
+        const isHigh = (score) => score >= 0.7;
+        const isLow = (score) => score < 0.5;
+
+        // Extract key metrics
+        const fluency = analysis.pace_and_processing.cognitive_fluency_seconds;
+        const creativeTime =
+            analysis.pace_and_processing.deliberation_time_creative_seconds;
+        const expressiveness =
+            analysis.pace_and_processing.verbal_expressiveness_avg_words;
+        const cohesion =
+            analysis.attention_and_focus.topic_cohesion_percent / 100;
+        const distractions = analysis.attention_and_focus.distraction_events;
+        const creativeProblemSolving =
+            analysis.reasoning_and_problem_solving
+                .creative_problem_solving_score;
+        const metacognitionEvents =
+            analysis.reasoning_and_problem_solving.metacognition_events;
+        const shortTermRecall =
+            analysis.memory_and_synthesis.short_term_recall_percent / 100;
+        const crossSessionLinks =
+            analysis.memory_and_synthesis.cross_session_links_made;
+
+        // Generate recommendations based on the analysis
+        const recommendations = {
+            key_takeaway: "",
+            leverage_strengths: [],
+            support_growth_areas: [],
+        };
+
+        // Determine key takeaway based on dominant patterns
+        if (isHigh(creativeProblemSolving) && metacognitionEvents > 3) {
+            recommendations.key_takeaway =
+                "This student demonstrates strong creative thinking abilities combined with excellent self-awareness in their learning process. They benefit most from open-ended, exploratory learning experiences that allow them to reflect on their thought process.";
+        } else if (isHigh(cohesion) && isHigh(shortTermRecall)) {
+            recommendations.key_takeaway =
+                "This student shows exceptional focus and information retention capabilities. They excel in structured learning environments where they can build upon their strong foundation of knowledge retention.";
+        } else if (expressiveness > 30 && crossSessionLinks > 2) {
+            recommendations.key_takeaway =
+                "This student exhibits strong verbal communication skills and naturally makes connections across different topics. They thrive in discussion-based learning environments that encourage knowledge synthesis.";
+        } else {
+            recommendations.key_takeaway =
+                "This student shows unique learning patterns that suggest potential for growth across multiple areas. They would benefit from a balanced approach that combines structured learning with creative exploration.";
+        }
+
+        // Add strength-based recommendations with context
+        if (isHigh(creativeProblemSolving)) {
+            recommendations.leverage_strengths.push({
+                recommendation:
+                    "Integrate project-based learning with real-world scenarios into daily activities. For example, have the student design solutions to community challenges or create innovative approaches to curriculum topics.",
+                rationale: `This student's high creative problem-solving score (${Math.round(creativeProblemSolving * 100)}%) indicates they excel when engaging with open-ended challenges. Their ability to think innovatively suggests they'll benefit most from activities that allow them to explore multiple solution paths.`,
+            });
+        }
+
+        if (isHigh(cohesion)) {
+            recommendations.leverage_strengths.push({
+                recommendation:
+                    "Assign this student as a peer mentor for group projects, particularly in complex topics where maintaining focus is crucial. Consider having them lead small group discussions or explain challenging concepts to classmates.",
+                rationale: `With a strong topic cohesion score of ${Math.round(cohesion * 100)}%, this student demonstrates exceptional ability to maintain focus and articulate complex ideas. Their clear understanding of subject matter makes them an ideal candidate for peer teaching.`,
+            });
+        }
+
+        if (metacognitionEvents > 3) {
+            recommendations.leverage_strengths.push({
+                recommendation:
+                    "Implement regular reflection sessions where this student can guide peers in analyzing their learning strategies. Create opportunities for them to document and share their problem-solving approaches.",
+                rationale: `The student's high number of metacognitive events (${metacognitionEvents}) shows they actively think about their learning process. This self-awareness can be leveraged to benefit both their own learning and that of their peers.`,
+            });
+        }
+
+        // Add growth area recommendations with detailed context
+        if (isLow(shortTermRecall)) {
+            recommendations.support_growth_areas.push({
+                recommendation:
+                    "Implement a structured spaced repetition system using digital flashcards or a learning journal. Break complex topics into smaller chunks and review them at increasing intervals (24 hours, 3 days, 1 week, etc.).",
+                rationale: `This student's short-term recall rate of ${Math.round(shortTermRecall * 100)}% suggests they would benefit from systematic memory reinforcement. Their learning patterns indicate that information retention improves significantly when material is revisited at strategic intervals.`,
+            });
+        }
+
+        if (distractions > 5) {
+            recommendations.support_growth_areas.push({
+                recommendation:
+                    "Structure learning sessions using the Pomodoro Technique: 25-minute focused work periods followed by 5-minute breaks. Use a visual timer and clear task lists for each session. Consider creating a distraction-free study zone with minimal visual and auditory stimuli.",
+                rationale: `The presence of ${distractions} distraction events indicates a need for structured focus periods. The student's attention patterns suggest they perform better with clear temporal boundaries and explicit goals for each learning session.`,
+            });
+        }
+
+        if (crossSessionLinks < 2) {
+            recommendations.support_growth_areas.push({
+                recommendation:
+                    "Develop a knowledge mapping routine where the student creates visual connections between new topics and previously learned material. Use tools like mind maps or concept webs at the beginning and end of each unit.",
+                rationale: `With only ${crossSessionLinks} cross-session links observed, this student would benefit from explicit practice in connecting ideas across different learning sessions. Their cognitive patterns suggest potential for improved learning through structured knowledge synthesis activities.`,
+            });
+        }
+
+        return recommendations;
+    }
+</script>
